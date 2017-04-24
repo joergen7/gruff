@@ -1,5 +1,5 @@
 # substeer
-###### A basic worker pool factory for Erlang to demonstrate the expressive power of gen_pnet
+###### A basic worker pool factory for Erlang to demonstrate the expressive power of gen_pnet.
 
 [![hex.pm](https://img.shields.io/hexpm/v/substeer.svg?style=flat-square)](https://hex.pm/packages/substeer) [![Build Status](https://travis-ci.org/joergen7/substeer.svg?branch=master)](https://travis-ci.org/joergen7/substeer)
 
