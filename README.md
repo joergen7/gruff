@@ -11,6 +11,13 @@ The interface and behavior of the substeer library are intentionally close to th
 
 *Petri net model of the substeer module.*
 
+## Differences to poolboy
+
+- substeer does not support non-blocking checkout.
+- substeer does not support synchronous checkout.
+- non-deterministic worker allocation strategy instead of fifo/lifo allocation strategies.
+- the number of workers is fixed (no overflow feature)
+
 ## System Requirements
 
 - Erlang OTP 18.0 or higher
