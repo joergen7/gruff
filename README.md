@@ -9,12 +9,12 @@ The interface and behavior of the substeer library are intentionally close to th
 
 ![substeer Petri net model](priv/substeer_pnet.png)
 
-*Petri net model of the substeer module.*
+*Petri net model of the substeer interface and internal behavior.*
 
 ## Differences to poolboy
 
-- substeer does not support non-blocking checkout.
-- substeer does not support synchronous checkout.
+- non-blocking checkout unsupported.
+- synchronous checkout unsupported.
 - non-deterministic worker allocation strategy instead of fifo/lifo allocation strategies.
 - the number of workers is fixed (no overflow feature)
 
