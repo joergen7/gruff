@@ -1,10 +1,15 @@
 # substeer
-###### A basic pooling library for Erlang to demonstrate the expressive power of gen_pnet
+###### A basic worker pool factory for Erlang to demonstrate the expressive power of gen_pnet
 
-[![hex.pm](https://img.shields.io/hexpm/v/gen_pnet.svg?style=flat-square)](https://hex.pm/packages/substeer) [![Build Status](https://travis-ci.org/joergen7/substeer.svg?branch=master)](https://travis-ci.org/joergen7/substeer)
+[![hex.pm](https://img.shields.io/hexpm/v/substeer.svg?style=flat-square)](https://hex.pm/packages/substeer) [![Build Status](https://travis-ci.org/joergen7/substeer.svg?branch=master)](https://travis-ci.org/joergen7/substeer)
 
+This library allows the management of a fixed-size worker pool from which generic worker instances can be allocated, used, and released. Communication is strictly asynchronous. Substeer automatically restarts any failing worker and a worker is automatically released if the allocating client fails prior to releasing the worker.
+
+The interface and behavior of the substeer library are intentionally close to the [poolboy](https://github.com/devinus/poolboy) worker pool factory. This allows the comparison of performance, features, and implementation details. Herein, substeer is the attempt to max out simplicity and clarity in the implementation to showcase the expressive power of the [gen_pnet](https://github.com/joergen7/gen_pnet) behavior.
 
 ![substeer Petri net model](priv/substeer_pnet.png)
+
+*Petri net model of the substeer module.*
 
 ## System Requirements
 

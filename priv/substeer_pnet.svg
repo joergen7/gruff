@@ -15,7 +15,10 @@
    version="1.1"
    id="svg4688"
    inkscape:version="0.92.1 r"
-   sodipodi:docname="substeer_pnet.svg">
+   sodipodi:docname="substeer_pnet.svg"
+   inkscape:export-filename="/home/jorgen/git/substeer/priv/substeer_pnet.png"
+   inkscape:export-xdpi="140"
+   inkscape:export-ydpi="140">
   <defs
      id="defs4682">
     <marker
@@ -507,9 +510,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.4321527"
-     inkscape:cx="467.86166"
-     inkscape:cy="554.39826"
+     inkscape:zoom="1.7197917"
+     inkscape:cx="369.18364"
+     inkscape:cy="652.2498"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -774,7 +777,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -879,12 +882,12 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="79.849068"
+       x="77.71907"
        y="103.34863"
        id="text5978"><tspan
          sodipodi:role="line"
          id="tspan5976"
-         x="79.849068"
+         x="77.71907"
          y="103.34863"
          style="font-size:2.82222223px;line-height:1.25;letter-spacing:-0.21166667px;stroke-width:0.28222224px">Waiting</tspan></text>
     <path
@@ -1667,5 +1670,46 @@
          cy="156.29704"
          r="0.40000001" />
     </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="82.7006"
+       y="109.6843"
+       id="text63269"
+       inkscape:export-xdpi="140"
+       inkscape:export-ydpi="140"><tspan
+         sodipodi:role="line"
+         id="tspan63267"
+         x="82.7006"
+         y="109.6843"
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11666656px;line-height:1.25;font-family:serif;-inkscape-font-specification:'serif Italic';letter-spacing:-0.21166667px;stroke-width:0.28222224px"><tspan
+   id="tspan63261"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:serif;-inkscape-font-specification:serif">(</tspan>r<tspan
+   id="tspan63263"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:serif;-inkscape-font-specification:serif">,</tspan>m<tspan
+   id="tspan63265"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:serif;-inkscape-font-specification:serif">)</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="65.318169"
+       y="157.7393"
+       id="text5425"><tspan
+         sodipodi:role="line"
+         id="tspan5423"
+         x="65.318169"
+         y="157.7393"
+         style="font-size:2.82222223px;line-height:1.25;letter-spacing:-0.21166667px;stroke-width:0.28222224px">exit_busy</tspan></text>
+    <text
+       id="text5429"
+       y="162.43164"
+       x="118.01786"
+       style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-size:2.82222223px;line-height:1.25;letter-spacing:-0.21166667px;stroke-width:0.28222224px"
+         y="162.43164"
+         x="118.01786"
+         id="tspan5427"
+         sodipodi:role="line">exit_idle</tspan></text>
   </g>
 </svg>
