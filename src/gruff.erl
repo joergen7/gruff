@@ -29,7 +29,7 @@
 -behavior( gen_pnet ).
 
 -export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2, init/1,
-          terminate/2, trigger/2] ).
+          terminate/2, trigger/3] ).
 
 -export( [place_lst/0, trsn_lst/0, init_marking/2, preset/1, is_enabled/2,
           fire/3] ).
@@ -77,7 +77,7 @@ init( {WrkMod, WrkArgs, N} ) ->
 
 terminate( _Reason, _NetState ) -> ok.
 
-trigger( _, _ ) -> pass.
+trigger( _, _, _ ) -> pass.
 
 
 %%====================================================================
@@ -113,7 +113,17 @@ preset( exit_idle )      -> ['Exit', 'Idle'];
 preset( start )          -> ['Unstarted'].
 
 
-is_enabled( _, _ ) -> true.
+is_enabled( down_busy,      #{ 'Down' := [M],    'Busy' := [{_, M, _}] } ) -> true;
+is_enabled( down_waiting,   #{ 'Down' := [M],    'Waiting' := [{_, M}] } ) -> true;
+is_enabled( monitor,        _ )                                            -> true;
+is_enabled( cancel_waiting, #{ 'Cancel' := [R],  'Waiting' := [{R, _}] } ) -> true;
+is_enabled( cancel_busy,    #{ 'Cancel' := [R],  'Busy' := [{R, _, _}] } ) -> true;
+is_enabled( free,           #{ 'Checkin' := [P], 'Busy' := [{_, _, P}] } ) -> true;
+is_enabled( alloc,          _ )                                            -> true;
+is_enabled( exit_busy,      #{ 'Exit' := [P],    'Busy' := [{_, _, P}] } ) -> true;
+is_enabled( exit_idle,      #{ 'Exit' := [P],    'Idle' := [P] } )         -> true;
+is_enabled( start,          _ )                                            -> true;
+is_enabled( _,              _ )                                            -> false.
 
 
 fire( start, #{ 'Unstarted' := [t] }, #gruff_state{ sup_pid = SupPid } ) ->
