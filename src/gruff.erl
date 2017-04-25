@@ -57,6 +57,9 @@ handle_cast( _Request, _NetState ) -> noreply.
 
 handle_info( _Request, _NetState ) -> noreply.
 
+init( N ) ->
+  {ok, gen_pnet:new( ?MODULE, N )}.
+
 terminate( _Reason, _NetState ) -> ok.
 
 trigger( _, _ ) -> pass.
@@ -67,19 +70,28 @@ trigger( _, _ ) -> pass.
 %%====================================================================
 
 place_lst() ->
-  [].
+  ['Down', 'Checkout', 'Cancel', 'Checkin', 'Exit', 'Reply', 'Waiting', 'Busy',
+   'Idle', 'Unstarted'].
 
 trsn_lst() ->
-  [].
+  [down_busy, down_waiting, monitor, cancel_waiting, cancel_busy, free, alloc,
+   exit_busy, exit_idle, start].
 
-init_marking( _ ) ->
-  [].
+init_marking( 'Unstarted', N ) -> lists:duplicate( N, tk );
+init_marking( _, _ )           -> [].
 
-preset( _ ) ->
-  [].
+preset( down_busy )      -> ['Down', 'Busy'];
+preset( down_waiting )   -> ['Down', 'Waiting'];
+preset( monitor )        -> ['Checkout'];
+preset( cancel_waiting ) -> ['Cancel', 'Waiting'];
+preset( cancel_busy )    -> ['Cancel', 'Busy'];
+preset( free )           -> ['Checkin', 'Busy'];
+preset( alloc )          -> ['Waiting', 'Idle'];
+preset( exit_busy )      -> ['Exit', 'Busy'];
+preset( exit_idle )      -> ['Exit', 'Idle'];
+preset( start )          -> ['Unstarted'].
 
-is_enabled( _, _ ) ->
-  false.
+is_enabled( _, _ ) -> true.
 
 fire( _, _ ) ->
   abort.

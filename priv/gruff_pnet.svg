@@ -512,7 +512,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.7197917"
      inkscape:cx="366.85778"
-     inkscape:cy="675.50843"
+     inkscape:cy="594.10322"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1705,5 +1705,17 @@
          x="118.01786"
          id="tspan5427"
          sodipodi:role="line">exit_idle</tspan></text>
+    <text
+       id="text3622"
+       y="153.05214"
+       x="143.15454"
+       style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"
+       sodipodi:linespacing="0%"><tspan
+         style="font-size:2.82222223px;line-height:1.25;letter-spacing:-0.21166667px;stroke-width:0.28222224px"
+         y="153.05214"
+         x="143.15454"
+         id="tspan3624"
+         sodipodi:role="line">Unstarted</tspan></text>
   </g>
 </svg>
