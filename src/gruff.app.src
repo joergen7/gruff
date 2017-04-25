@@ -7,7 +7,7 @@
     stdlib
    ]},
   {env,[]},
-  {modules, [gruff]},
+  {modules, [gruff, gruff_sup, gruff_wrk]},
 
   {maintainers, ["Jorgen Brandt"]},
   {licenses, ["Apache 2.0"]},
