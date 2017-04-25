@@ -1,0 +1,17 @@
+{application, gruff,
+ [{description, "A basic worker pool factory for Erlang to demonstrate the expressive power of gen_pnet."},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, [gruff]},
+
+  {maintainers, ["Jorgen Brandt"]},
+  {licenses, ["Apache 2.0"]},
+  {links, [
+           {"GitHub", "https://github.com/joergen7/gruff"},
+          ]}
+ ]}.

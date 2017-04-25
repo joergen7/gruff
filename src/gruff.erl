@@ -25,7 +25,7 @@
 %% @end
 %% -------------------------------------------------------------------
 
--module(substeer).
+-module( gruff ).
 -behavior( gen_pnet ).
 
 -export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2,
