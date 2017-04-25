@@ -53,7 +53,7 @@ init( {WorkerMod, WorkerArgs} ) ->
                 },
 
     ChildSpec = #{
-                   id       => WorkerMod,
+                   id       => undefined,
                    start    => {WorkerMod, start_link, [WorkerArgs]},
                    restart  => temporary,
                    shutdown => 5000,
