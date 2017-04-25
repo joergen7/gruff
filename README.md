@@ -15,8 +15,8 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 - strictly asynchronous communication (no non-blocking checkout or synchronous checkout)
 - non-deterministic worker allocation strategy instead of fifo/lifo allocation strategies.
-- the number of workers is fixed (no overflow feature)
-- workers are completely homogeneous.
+- the number of workers is fixed (no overflow)
+- a single homogeneous worker pool is provided
 
 ## System Requirements
 

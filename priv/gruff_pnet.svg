@@ -512,7 +512,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.7197917"
      inkscape:cx="366.85778"
-     inkscape:cy="594.10322"
+     inkscape:cy="617.36185"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -521,8 +521,8 @@
      inkscape:snap-bbox="true"
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-intersection-paths="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1031"
+     inkscape:window-width="1366"
+     inkscape:window-height="717"
      inkscape:window-x="0"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
@@ -1414,17 +1414,6 @@
          id="tspan35388"
          sodipodi:role="line">m</tspan></text>
     <text
-       id="text35394"
-       y="105.33163"
-       x="129.30185"
-       style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       xml:space="preserve"><tspan
-         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11666656px;line-height:1.25;font-family:serif;-inkscape-font-specification:'serif Italic';letter-spacing:-0.21166667px;stroke-width:0.28222224px"
-         y="105.33163"
-         x="129.30185"
-         id="tspan35392"
-         sodipodi:role="line">p</tspan></text>
-    <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="129.30185"
@@ -1717,5 +1706,25 @@
          x="143.15454"
          id="tspan3624"
          sodipodi:role="line">Unstarted</tspan></text>
+    <text
+       inkscape:export-ydpi="140"
+       inkscape:export-xdpi="140"
+       id="text4830"
+       y="105.41763"
+       x="128.1839"
+       style="font-style:normal;font-weight:normal;font-size:3.38666677px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.28222224px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"
+       sodipodi:linespacing="0%"><tspan
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11666656px;line-height:1.25;font-family:serif;-inkscape-font-specification:'serif Italic';letter-spacing:-0.21166667px;stroke-width:0.28222224px"
+         y="105.41763"
+         x="128.1839"
+         id="tspan4832"
+         sodipodi:role="line"><tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:serif;-inkscape-font-specification:serif"
+   id="tspan4834">(</tspan>r<tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:serif;-inkscape-font-specification:serif"
+   id="tspan4836">,<tspan
+   style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:serif;-inkscape-font-specification:'serif Italic'"
+   id="tspan4840">p</tspan>)</tspan></tspan></text>
   </g>
 </svg>

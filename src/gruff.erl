@@ -44,8 +44,36 @@
 %% API functions
 %%====================================================================
 
-start_link( WrkMod, WrkArgs, N ) ->
+start_link( WrkMod, WrkArgs, N )
+when is_atom( WrkMod ), is_integer( N ), N > 0 ->
   gen_pnet:start_link( ?MODULE, {WrkMod, WrkArgs, N}, [] ).
+
+checkout( Pid ) ->
+  R = make_ref(),
+  ok = gen_pnet:cast( Pid, {checkout, R} ),
+  R.
+
+checkin( Pid, WrkPid ) when is_pid( WrkPid ) ->
+  ok = gen_pnet:cast( Pid, {checkin, WrkPid} ).
+
+cancel( Pid, R ) when is_reference( R ) ->
+  ok = gen_pnet:cast( Pid, {cancel, R} ).
+
+wait_for( Pid, R, Interval )
+when is_reference( R ), is_integer( Interval ), Integer >= 0 ->
+  receive
+    {checkout_ok, R, P} -> {ok, P};
+    {checkout_ok, _, P} -> ok = checkin( Pid, P ), wait_for( Pid, R, Interval )
+  after
+    Interval -> ok = cancel( Pid, R ), {error, timeout}
+  end.
+
+wait_for( Pid, R ) when is_reference( R ) ->
+  receive
+    {checkout_ok, R, P} -> {ok, P};
+    {checkout_ok, _, P} -> ok = checkin( Pid, P ), wait_for( Pid, R )
+  end.
+
 
 %%====================================================================
 %% Interface callback functions
@@ -60,20 +88,10 @@ handle_cast( _Request, _NetState ) -> noreply.
 handle_info( _Request, _NetState ) -> noreply.
 
 init( {WrkMod, WrkArgs, N} ) ->
-
-  % trap exits
   process_flag( trap_exit, true ),
-
-  % start supervisor process
   {ok, SupPid} = gruff_sup:start_link( WrkMod, WrkArgs ),
-
-  % generate user info data structure
   GruffState = #gruff_state{ nwrk = N, sup_pid = SupPid },
-
-  % generate gen_pnet initial data structure
-  NetState = gen_pnet:new( ?MODULE, GruffState ),
-
-  {ok, NetState}.
+  {ok, gen_pnet:new( ?MODULE, GruffState )}.
 
 terminate( _Reason, _NetState ) -> ok.
 
