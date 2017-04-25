@@ -9,7 +9,7 @@ The interface and behavior of the substeer library are intentionally close to th
 
 ![substeer Petri net model](priv/substeer_pnet.png)
 
-*Petri net model of the substeer interface and internal behavior.*
+*Petri net model of the substeer interface and internal behavior with three worker processes.*
 
 ## Differences to poolboy
 
