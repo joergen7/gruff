@@ -1,6 +1,6 @@
 %% -*- erlang -*-
 %%
-%% A basic worker pool factory for Erlang to demonstrate the expressive power of
+%% A basic wrk pool factory for Erlang to demonstrate the expressive power of
 %% gen_pnet.
 %%
 %% Copyright 2017 Jorgen Brandt
@@ -38,14 +38,14 @@
 
 -include_lib( "gen_pnet/include/gen_pnet.hrl" ).
 
--record( gruff_state, {nworker, sup_pid} ).
+-record( gruff_state, {nwrk, sup_pid} ).
 
 %%====================================================================
 %% API functions
 %%====================================================================
 
-start_link( WorkerMod, WorkerArgs, N ) ->
-  gen_pnet:start_link( ?MODULE, {WorkerMod, WorkerArgs, N}, [] ).
+start_link( WrkMod, WrkArgs, N ) ->
+  gen_pnet:start_link( ?MODULE, {WrkMod, WrkArgs, N}, [] ).
 
 %%====================================================================
 %% Interface callback functions
@@ -59,10 +59,21 @@ handle_cast( _Request, _NetState ) -> noreply.
 
 handle_info( _Request, _NetState ) -> noreply.
 
-init( {WorkerMod, WorkerArgs, N} ) ->
-  {ok, SupPid} = gruff_sup:start_link( WorkerMod, WorkerArgs ),
-  GruffState = #gruff_state{ nworker = N, sup_pid = SupPid },
-  {ok, gen_pnet:new( ?MODULE, GruffState )}.
+init( {WrkMod, WrkArgs, N} ) ->
+
+  % trap exits
+  process_flag( trap_exit, true ),
+
+  % start supervisor process
+  {ok, SupPid} = gruff_sup:start_link( WrkMod, WrkArgs ),
+
+  % generate user info data structure
+  GruffState = #gruff_state{ nwrk = N, sup_pid = SupPid },
+
+  % generate gen_pnet initial data structure
+  NetState = gen_pnet:new( ?MODULE, GruffState ),
+
+  {ok, NetState}.
 
 terminate( _Reason, _NetState ) -> ok.
 
@@ -77,15 +88,18 @@ place_lst() ->
   ['Down', 'Checkout', 'Cancel', 'Checkin', 'Exit', 'Reply', 'Waiting', 'Busy',
    'Idle', 'Unstarted'].
 
+
 trsn_lst() ->
   [down_busy, down_waiting, monitor, cancel_waiting, cancel_busy, free, alloc,
    exit_busy, exit_idle, start].
 
-init_marking( 'Unstarted', #gruff_state{ nworker = N } ) ->
-  lists:duplicate( N, tk );
+
+init_marking( 'Unstarted', #gruff_state{ nwrk = N } ) ->
+  lists:duplicate( N, t );
 
 init_marking( _, _ ) ->
   [].
+
 
 preset( down_busy )      -> ['Down', 'Busy'];
 preset( down_waiting )   -> ['Down', 'Waiting'];
@@ -98,9 +112,18 @@ preset( exit_busy )      -> ['Exit', 'Busy'];
 preset( exit_idle )      -> ['Exit', 'Idle'];
 preset( start )          -> ['Unstarted'].
 
+
 is_enabled( _, _ ) -> true.
 
-fire( _, _, _ ) ->
-  abort.
+
+fire( start, #{ 'Unstarted' := [t] }, #gruff_state{ sup_pid = SupPid } ) ->
+
+  % start new worker under supervisor
+  {ok, WrkPid} = supervisor:start_child( SupPid, [] ),
+
+  % link to newly started worker process
+  true = link( WrkPid ),
+
+  {produce, #{ 'Idle' => [WrkPid] }}.
 
 
