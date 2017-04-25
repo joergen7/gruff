@@ -28,22 +28,24 @@
 -module( gruff ).
 -behavior( gen_pnet ).
 
--export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2,
+-export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2, init/1,
           terminate/2, trigger/2] ).
 
--export( [place_lst/0, trsn_lst/0, init_marking/1, preset/1, is_enabled/2,
-        fire/2] ).
+-export( [place_lst/0, trsn_lst/0, init_marking/2, preset/1, is_enabled/2,
+          fire/3] ).
 
--export( [start_link/0] ).
+-export( [start_link/3] ).
 
 -include_lib( "gen_pnet/include/gen_pnet.hrl" ).
+
+-record( gruff_state, {nworker, sup_pid} ).
 
 %%====================================================================
 %% API functions
 %%====================================================================
 
-start_link() ->
-  gen_pnet:start_link( ?MODULE, [] ).
+start_link( WorkerMod, WorkerArgs, N ) ->
+  gen_pnet:start_link( ?MODULE, {WorkerMod, WorkerArgs, N}, [] ).
 
 %%====================================================================
 %% Interface callback functions
@@ -57,8 +59,10 @@ handle_cast( _Request, _NetState ) -> noreply.
 
 handle_info( _Request, _NetState ) -> noreply.
 
-init( N ) ->
-  {ok, gen_pnet:new( ?MODULE, N )}.
+init( {WorkerMod, WorkerArgs, N} ) ->
+  {ok, SupPid} = gruff_sup:start_link( WorkerMod, WorkerArgs ),
+  GruffState = #gruff_state{ nworker = N, sup_pid = SupPid },
+  {ok, gen_pnet:new( ?MODULE, GruffState )}.
 
 terminate( _Reason, _NetState ) -> ok.
 
@@ -77,8 +81,11 @@ trsn_lst() ->
   [down_busy, down_waiting, monitor, cancel_waiting, cancel_busy, free, alloc,
    exit_busy, exit_idle, start].
 
-init_marking( 'Unstarted', N ) -> lists:duplicate( N, tk );
-init_marking( _, _ )           -> [].
+init_marking( 'Unstarted', #gruff_state{ nworker = N } ) ->
+  lists:duplicate( N, tk );
+
+init_marking( _, _ ) ->
+  [].
 
 preset( down_busy )      -> ['Down', 'Busy'];
 preset( down_waiting )   -> ['Down', 'Waiting'];
@@ -93,7 +100,7 @@ preset( start )          -> ['Unstarted'].
 
 is_enabled( _, _ ) -> true.
 
-fire( _, _ ) ->
+fire( _, _, _ ) ->
   abort.
 
 
