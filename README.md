@@ -11,11 +11,18 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 *Petri net model of the gruff interface and internal behavior with three worker processes.*
 
-## Differences to poolboy
+## Differences to other process pool managers
+
+### poolboy
 
 - checkout calls are always blocking (no non-blocking checkout)
-- non-deterministic worker allocation strategy instead of fifo/lifo allocation strategies.
+- non-deterministic worker allocation strategy instead of fifo/lifo allocation strategies
 - the number of workers is fixed (no overflow)
+- preference of `{ok, Result} | {error, Reason}` return values over exception handling
+
+### pooler
+
+### worker_pool
 
 ## System Requirements
 
@@ -26,6 +33,8 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 - [joergen7/gen_pnet](https://github.com/joergen7/gen_pnet). A generic Petri net OTP behavior.
 - [devinus/poolboy](https://github.com/devinus/poolboy). A hunky Erlang worker pool factory.
+- [seth/pooler](https://github.com/seth/pooler). An OTP process pool application.
+- [inaka/worker_pool](https://github.com/inaka/worker_pool). Erlang worker pool.
 
 ## Authors
 

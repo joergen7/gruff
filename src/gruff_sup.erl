@@ -36,7 +36,7 @@
 %% API functions
 %%====================================================================
 
-%% @doc Starts an instance of a gruff supervisor. The argument `ẀrkMod' is the
+%% @doc Starts an instance of a gruff supervisor. The argument `WrkMod' is the
 %%      worker module name and the `WrkArgs' argument is handed to the worker
 %%      process on startup.
 start_link( WrkMod, WrkArgs ) when is_atom( WrkMod ) ->

@@ -54,6 +54,24 @@
 -record( gruff_state, {nwrk, sup_pid} ).
 
 %%====================================================================
+%% Type definitions
+%%====================================================================
+
+-type pool() :: atom()
+              | {atom(), atom()}
+              | {global, _}
+              | {via, atom(), _}
+              | pid().
+
+-type server_name() :: {local, atom()}
+                     | {global, atom()}
+                     | {via, atom(), _}.
+
+-type result() :: {ok, pid()}
+                | ignore
+                | {error, _}.
+
+%%====================================================================
 %% Macro definitions
 %%====================================================================
 
@@ -63,7 +81,14 @@
 %% API functions
 %%====================================================================
 
--spec start_link( WrkMod, WrkArgs, N ) -> {ok, pid()}
+%% @doc Starts an instance of a gruff worker pool. The workers are specified in
+%%      the module given as the `WrkMod' argument. This module is expected to
+%%      implement the `gruff_wrk' behavior. On startup the worker process
+%%      is given `WrkArgs' as an argument. `N' is the number of workers to be
+%%      maintained by this worker pool. Returns `{ok, Pid}' on success.
+%%      Returns `ignore' or `{error, Reason} otherwise.
+%% @see start_link/4
+-spec start_link( WrkMod, WrkArgs, N ) -> result()
 when WrkMod  :: atom(),
      WrkArgs :: _,
      N       :: pos_integer().
@@ -72,16 +97,46 @@ start_link( WrkMod, WrkArgs, N )
 when is_atom( WrkMod ), is_integer( N ), N > 0 ->
   gen_pnet:start_link( ?MODULE, {WrkMod, WrkArgs, N}, [] ).
 
+%% @doc Starts an instance of a gruff worker pool registered as `ServerName'.
+%%      The workers are specified in the module given as the `WrkMod' argument.
+%%      This module is expected to implement the `gruff_wrk' behavior. On
+%%      startup the worker process is given `WrkArgs' as an argument. `N' is the
+%%      number of workers to be maintained by this worker pool. Returns
+%%      `{ok, Pid}' on success. Returns `ignore' or `{error, Reason} otherwise.
+%% @see start_link/3
+-spec start_link( ServerName, WrkMod, WrkArgs, N ) -> result()
+when ServerName :: server_name(),
+     WrkMod     :: atom(),
+     WrkArgs    :: _,
+     N          :: pos_integer().
 
+start_link( ServerName, WrkMod, WrkArgs, N )
+when is_atom( WrkMod ), is_integer( N ), N > 0 ->
+  gen_pnet:start_link( ServerName, ?MODULE, {WrkMod, WrkArgs, N}, [] ).
+
+
+%% @doc Checks out a worker instance from the worker pool. `Pool' is the name of
+%%      the gruff process instance created with `start_link/n'. The result is
+%%      either `{ok, Pid}' or `{error, Reason}' where `Pid' is the process id of
+%%      the successfully allocated worker instance. The function times out after
+%%      5 seconds.
+%% @see checkout/2
 -spec checkout( Pool ) -> {ok, pid()} | {error, _}
-when Pool :: _.
+when Pool :: pool().
 
 checkout( Pool ) ->
   checkout( Pool, ?TIMEOUT ).
 
 
+%% @doc Checks out a worker instance from the worker pool with an explicit time
+%%      out interval. `Pool' is the name of the gruff process instance created
+%%      with `start_link/n'. The result is either `{ok, Pid}' or
+%%      `{error, Reason}' where `Pid' is the process id of the successfully
+%%      allocated worker instance. The function times out after `Timeout'
+%%      milliseconds.
+%% @see checkout/1
 -spec checkout( Pool, Timeout ) -> {ok, pid()} | {error, _}
-when Pool    :: _,
+when Pool    :: pool(),
      Timeout :: non_neg_integer().
 
 checkout( Pool, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
@@ -96,7 +151,7 @@ checkout( Pool, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
 
 
 -spec checkin( Pool, WrkPid ) -> ok
-when Pool   :: _,
+when Pool   :: pool(),
      WrkPid :: pid().
 
 checkin( Pool, WrkPid ) when is_pid( WrkPid ) ->
@@ -104,7 +159,7 @@ checkin( Pool, WrkPid ) when is_pid( WrkPid ) ->
 
 
 -spec transaction( Pool, Fun ) -> {ok, _} | {error, _}
-when Pool :: _,
+when Pool :: pool(),
      Fun  :: fun( ( _ ) -> _ ).
 
 transaction( Pool, Fun ) when is_function( Fun, 1 ) ->
@@ -112,7 +167,7 @@ transaction( Pool, Fun ) when is_function( Fun, 1 ) ->
 
 
 -spec transaction( Pool, Fun, Timeout ) -> {ok, _} | {error, _}
-when Pool    :: _,
+when Pool    :: pool(),
      Fun     :: fun( ( _ ) -> _ ),
      Timeout :: non_neg_integer().
 
