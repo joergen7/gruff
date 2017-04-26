@@ -1,6 +1,6 @@
 %% -*- erlang -*-
 %%
-%% A basic wrk pool factory for Erlang to demonstrate the expressive power of
+%% A basic worker pool factory for Erlang to demonstrate the expressive power of
 %% gen_pnet.
 %%
 %% Copyright 2017 Jorgen Brandt
@@ -270,4 +270,3 @@ fire( cancel_busy, #{ 'Cancel' := [R], 'Busy' := [{R, M, P}] }, _ ) ->
 fire( free, #{ 'Checkin' := [P], 'Busy' := [{_, M, P}] }, _ ) ->
   true = demonitor( M ),
   {produce, #{ 'Idle' => [P] }}.
-  

@@ -1,0 +1,9 @@
+@author Jorgen Brandt <joergen.brandt@onlinehome.de>
+@copyright 2016 Jorgen Brandt
+@version 0.1.0
+@title A basic worker pool factory for Erlang
+@doc
+
+This library allows the management of a fixed-size worker pool from which generic worker instances can be allocated, used, and released. Gruff automatically restarts any failing worker and a worker is automatically released if the allocating client fails.
+
+The interface and behavior of the gruff library are intentionally close to the poolboy worker pool factory. This allows the comparison of performance, features, and implementation details. Herein, gruff is the attempt to max out simplicity and clarity in the implementation to showcase the expressive power of the gen_pnet behavior.
