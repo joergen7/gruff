@@ -32,6 +32,10 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 
 ## Usage
 
+### Squaring numbers
+
+### Pooling database connections
+
 ## System Requirements
 
 - Erlang OTP 18.0 or higher
