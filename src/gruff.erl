@@ -38,7 +38,8 @@
 -export( [place_lst/0, trsn_lst/0, init_marking/2, preset/1, is_enabled/2,
           fire/3] ).
 
--export( [start_link/3, checkout/1, checkout/2, checkin/2] ).
+-export( [start_link/3, checkout/1, checkout/2, checkin/2, transaction/2,
+          transaction/3] ).
 
 %%====================================================================
 %% Includes
@@ -81,7 +82,7 @@ checkout( Pool ) ->
 
 -spec checkout( Pool, Timeout ) -> {ok, pid()} | {error, _}
 when Pool    :: _,
-     Timeout :: nonneg_integer().
+     Timeout :: non_neg_integer().
 
 checkout( Pool, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
   R = make_ref(),
@@ -104,7 +105,7 @@ checkin( Pool, WrkPid ) when is_pid( WrkPid ) ->
 
 -spec transaction( Pool, Fun ) -> {ok, _} | {error, _}
 when Pool :: _,
-     Fun  :: function( ( _ ) -> _ ).
+     Fun  :: fun( ( _ ) -> _ ).
 
 transaction( Pool, Fun ) when is_function( Fun, 1 ) ->
   transaction( Pool, Fun, ?TIMEOUT ).
@@ -112,13 +113,13 @@ transaction( Pool, Fun ) when is_function( Fun, 1 ) ->
 
 -spec transaction( Pool, Fun, Timeout ) -> {ok, _} | {error, _}
 when Pool    :: _,
-     Fun     :: function( ( _ ) -> _ ),
-     Timeout :: nonneg_integer().
+     Fun     :: fun( ( _ ) -> _ ),
+     Timeout :: non_neg_integer().
 
 transaction( Pool, Fun, Timeout )
 when is_function( Fun, 1 ), is_integer( Timeout ), Timeout >= 0 ->
   case checkout( Pool, Timeout ) of
-    {error, Reason -> {error, Reason};
+    {error, Reason} -> {error, Reason};
     {ok, WrkPid}   ->
       try
         {ok, Fun( WrkPid )}
