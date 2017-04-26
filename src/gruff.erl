@@ -62,14 +62,28 @@
 %% API functions
 %%====================================================================
 
+-spec start_link( WrkMod, WrkArgs, N ) -> {ok, pid()}
+when WrkMod  :: atom(),
+     WrkArgs :: _,
+     N       :: pos_integer().
+
 start_link( WrkMod, WrkArgs, N )
 when is_atom( WrkMod ), is_integer( N ), N > 0 ->
   gen_pnet:start_link( ?MODULE, {WrkMod, WrkArgs, N}, [] ).
 
+
+-spec checkout( Pool ) -> {ok, pid()} | {error, _}
+when Pool :: _.
+
 checkout( Pool ) ->
   checkout( Pool, ?TIMEOUT ).
 
-checkout( Pool, Timeout ) ->
+
+-spec checkout( Pool, Timeout ) -> {ok, pid()} | {error, _}
+when Pool    :: _,
+     Timeout :: nonneg_integer().
+
+checkout( Pool, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
   R = make_ref(),
   try
     gen_pnet:call( Pool, {checkout, R}, Timeout )
@@ -79,8 +93,41 @@ checkout( Pool, Timeout ) ->
       {error, Reason}
   end.
 
+
+-spec checkin( Pool, WrkPid ) -> ok
+when Pool   :: _,
+     WrkPid :: pid().
+
 checkin( Pool, WrkPid ) when is_pid( WrkPid ) ->
-  gen_pnet:cast( Pool, {checkin, WrkPid} ).
+  ok = gen_pnet:cast( Pool, {checkin, WrkPid} ).
+
+
+-spec transaction( Pool, Fun ) -> {ok, _} | {error, _}
+when Pool :: _,
+     Fun  :: function( ( _ ) -> _ ).
+
+transaction( Pool, Fun ) when is_function( Fun, 1 ) ->
+  transaction( Pool, Fun, ?TIMEOUT ).
+
+
+-spec transaction( Pool, Fun, Timeout ) -> {ok, _} | {error, _}
+when Pool    :: _,
+     Fun     :: function( ( _ ) -> _ ),
+     Timeout :: nonneg_integer().
+
+transaction( Pool, Fun, Timeout )
+when is_function( Fun, 1 ), is_integer( Timeout ), Timeout >= 0 ->
+  case checkout( Pool, Timeout ) of
+    {error, Reason -> {error, Reason};
+    {ok, WrkPid}   ->
+      try
+        {ok, Fun( WrkPid )}
+      catch
+        _:Reason -> {error, Reason}
+      after
+        ok = checkin( Pool, WrkPid )
+      end
+  end.
 
 %%====================================================================
 %% Actor interface callback functions
@@ -90,7 +137,8 @@ checkin( Pool, WrkPid ) when is_pid( WrkPid ) ->
 code_change( _OldVsn, NetState, _Extra ) -> {ok, NetState}.
 
 %% @private
-handle_call( {checkout, R}, From, _NetState ) when is_reference( R ) ->
+handle_call( {checkout, R}, From, _NetState )
+when is_reference( R ), is_tuple( From ) ->
   {noreply, #{}, #{ 'Checkout' => [{From, R}] }};
 
 handle_call( _Request, _From, _NetState ) ->
@@ -120,7 +168,7 @@ handle_info( _Request, _NetState ) -> noreply.
 init( {WrkMod, WrkArgs, N} ) ->
   false = process_flag( trap_exit, true ),
   {ok, SupPid} = gruff_sup:start_link( WrkMod, WrkArgs ),
-  GruffState = #gruff_state{ nwrk = N, sup_pid = SupPid },
+  GruffState = #gruff_state{ nwrk=N, sup_pid=SupPid },
   {ok, gen_pnet:new( ?MODULE, GruffState )}.
 
 
@@ -182,7 +230,7 @@ is_enabled( _,              _ )                                               ->
 
 
 %% @private
-fire( start, #{ 'Unstarted' := [t] }, #gruff_state{ sup_pid = SupPid } ) ->
+fire( start, #{ 'Unstarted' := [t] }, #gruff_state{ sup_pid=SupPid } ) ->
   {ok, WrkPid} = supervisor:start_child( SupPid, [] ),
   true = link( WrkPid ),
   {produce, #{ 'Idle' => [WrkPid] }};
