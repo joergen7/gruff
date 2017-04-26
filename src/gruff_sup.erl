@@ -36,15 +36,19 @@
 %% API functions
 %%====================================================================
 
-start_link( WorkerMod, WorkerArgs ) ->
-    supervisor:start_link( ?MODULE, {WorkerMod, WorkerArgs} ).
+%% @doc Starts an instance of a gruff supervisor. The argument `ẀrkMod' is the
+%%      worker module name and the `WrkArgs' argument is handed to the worker
+%%      process on startup.
+start_link( WrkMod, WrkArgs ) when is_atom( WrkMod ) ->
+    supervisor:start_link( ?MODULE, {WrkMod, WrkArgs} ).
 
 
 %%====================================================================
 %% Supervisor callback functions
 %%====================================================================
 
-init( {WorkerMod, WorkerArgs} ) ->
+%% @private
+init( {WrkMod, WrkArgs} ) when is_atom( WrkMod ) ->
 
     SupFlags = #{
                   strategy  => simple_one_for_one,
@@ -54,11 +58,11 @@ init( {WorkerMod, WorkerArgs} ) ->
 
     ChildSpec = #{
                    id       => undefined,
-                   start    => {WorkerMod, start_link, [WorkerArgs]},
+                   start    => {WrkMod, start_link, [WrkArgs]},
                    restart  => temporary,
                    shutdown => 5000,
                    type     => worker,
-                   modules  => [WorkerMod]
+                   modules  => [WrkMod]
                  },
 
     {ok, {SupFlags, [ChildSpec]}}.
