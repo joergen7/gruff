@@ -38,7 +38,7 @@
 -export( [place_lst/0, trsn_lst/0, init_marking/2, preset/1, is_enabled/2,
           fire/3] ).
 
--export( [start_link/3] ).
+-export( [start_link/3, checkout/1, checkout/2, checkin/2] ).
 
 %%====================================================================
 %% Includes
@@ -90,7 +90,7 @@ checkin( Pool, WrkPid ) when is_pid( WrkPid ) ->
 code_change( _OldVsn, NetState, _Extra ) -> {ok, NetState}.
 
 %% @private
-handle_call( {checkout, R}, From, NetState ) when is_reference( R ) ->
+handle_call( {checkout, R}, From, _NetState ) when is_reference( R ) ->
   {noreply, #{}, #{ 'Checkout' => [{From, R}] }};
 
 handle_call( _Request, _From, _NetState ) ->
@@ -98,19 +98,19 @@ handle_call( _Request, _From, _NetState ) ->
 
 
 %% @private
-handle_cast( {cancel, R}, NetState ) when is_reference( R ) ->
+handle_cast( {cancel, R}, _NetState ) when is_reference( R ) ->
   {noreply, #{}, #{ 'Cancel' => [R]}};
 
-handle_cast( {checkin, P}, NetState ) when is_pid( P ) ->
+handle_cast( {checkin, P}, _NetState ) when is_pid( P ) ->
   {noreply, #{}, #{ 'Checkin' => [P] }};
 
 handle_cast( _Request, _NetState ) -> noreply.
 
 %% @private
-handle_info( {'DOWN', MRef, _, _, _} ) when is_reference( MRef ) ->
+handle_info( {'DOWN', MRef, _, _, _}, _NetState ) when is_reference( MRef ) ->
   {noreply, #{}, #{ 'Down' => [MRef] }};
 
-handle_info( {'EXIT', Pid, _Reason} ) when is_pid( Pid ) ->
+handle_info( {'EXIT', Pid, _Reason}, _NetState ) when is_pid( Pid ) ->
   {noreply, #{}, #{ 'Exit' => [Pid] }};
 
 handle_info( _Request, _NetState ) -> noreply.
@@ -187,35 +187,35 @@ fire( start, #{ 'Unstarted' := [t] }, #gruff_state{ sup_pid = SupPid } ) ->
   true = link( WrkPid ),
   {produce, #{ 'Idle' => [WrkPid] }};
 
-fire( exit_idle, #{ 'Exit' := [P], 'Idle' := [P] } ) ->
+fire( exit_idle, #{ 'Exit' := [P], 'Idle' := [P] }, _ ) ->
   {produce, #{ 'Unstarted' => [t] }};
 
-fire( exit_busy, #{ 'Exit' := [P], 'Busy' := [_R, M, P] } ) ->
+fire( exit_busy, #{ 'Exit' := [P], 'Busy' := [_, M, P] }, _ ) ->
   true = demonitor( M ),
   {produce, #{ 'Unstarted' => [t] }};
 
-fire( down_waiting, #{ 'Down' := [M], 'Waiting' := [{_C, _R, M}] } ) ->
+fire( down_waiting, #{ 'Down' := [M], 'Waiting' := [{_, _, M}] }, _ ) ->
   {produce, #{}};
 
-fire( cancel_waiting, #{ 'Cancel' := [R], 'Waiting' := [{_C, R, M}] } ) ->
+fire( cancel_waiting, #{ 'Cancel' := [R], 'Waiting' := [{_, R, M}] }, _ ) ->
   true = demonitor( M ),
   {produce, #{}};
 
-fire( monitor, #{ 'Checkout' := [{C, R}] } ) ->
-  C = {ClientPid, _Tag},
+fire( monitor, #{ 'Checkout' := [{C, R}] }, _ ) ->
+  {ClientPid, _Tag} = C,
   M = monitor( process, ClientPid ),
   {produce, #{ 'Waiting' => [{C, R, M}] }};
 
-fire( down_busy, #{ 'Down' := [M], 'Busy' := [{_R, M, P}] } ) ->
+fire( down_busy, #{ 'Down' := [M], 'Busy' := [{_, M, P}] }, _ ) ->
   {produce, #{ 'Idle' => [P] }};
 
-fire( alloc, #{'Waiting' := [{C, R, M}], 'Idle' := [P] } ) ->
+fire( alloc, #{'Waiting' := [{C, R, M}], 'Idle' := [P] }, _ ) ->
   {produce, #{ 'Reply' => [{C, P}], 'Busy' => [{R, M, P}] }};
 
-fire( cancel_busy, #{ 'Cancel' := [R], 'Busy' := [{R, M, P}] } ) ->
+fire( cancel_busy, #{ 'Cancel' := [R], 'Busy' := [{R, M, P}] }, _ ) ->
   true = demonitor( M ),
   {produce, #{ 'Idle' => [P] }};
 
-fire( free, #{ 'Checkin' := [P], 'Busy' := [{_R, M, P}] } ) ->
+fire( free, #{ 'Checkin' := [P], 'Busy' := [{_, M, P}] }, _ ) ->
   true = demonitor( M ),
   {produce, #{ 'Idle' => [P] }}.
