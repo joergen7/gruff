@@ -17,8 +17,8 @@
    inkscape:version="0.91 r13725"
    sodipodi:docname="gruff_pnet.svg"
    inkscape:export-filename="/home/jorgen/git/gruff/priv/gruff_pnet.png"
-   inkscape:export-xdpi="140"
-   inkscape:export-ydpi="140">
+   inkscape:export-xdpi="131.0679"
+   inkscape:export-ydpi="131.0679">
   <defs
      id="defs4682">
     <marker
@@ -516,16 +516,16 @@
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     showguides="false"
+     showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-bbox="true"
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-intersection-paths="true"
-     inkscape:window-width="1366"
-     inkscape:window-height="717"
+     inkscape:window-width="1916"
+     inkscape:window-height="1041"
      inkscape:window-x="0"
-     inkscape:window-y="25"
-     inkscape:window-maximized="1"
+     inkscape:window-y="18"
+     inkscape:window-maximized="0"
      inkscape:object-nodes="true"
      inkscape:snap-nodes="true"
      inkscape:snap-others="false">
@@ -768,6 +768,30 @@
        inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="15,-100"
+       orientation="1,0"
+       id="guide3953"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="-100,235"
+       orientation="0,1"
+       id="guide3955"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="175,-100"
+       orientation="1,0"
+       id="guide3957"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="-100,125"
+       orientation="0,1"
+       id="guide3959"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
   </sodipodi:namedview>
   <metadata
      id="metadata4685">
@@ -785,6 +809,13 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       style="fill:#ffffff;fill-rule:evenodd;stroke:none;stroke-width:0.28222221px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       id="rect3961"
+       width="155"
+       height="109.99999"
+       x="20"
+       y="62.000004" />
     <rect
        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.25400001;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:0.254, 1.016;stroke-dashoffset:0;stroke-opacity:1"
        id="rect59243"
