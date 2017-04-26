@@ -38,8 +38,8 @@
 -export( [place_lst/0, trsn_lst/0, init_marking/2, preset/1, is_enabled/2,
           fire/3] ).
 
--export( [start_link/3, checkout/1, checkout/2, checkin/2, transaction/2,
-          transaction/3] ).
+-export( [start_link/3, start_link/4, checkout/1, checkout/2, checkin/2,
+          transaction/2, transaction/3] ).
 
 %%====================================================================
 %% Includes
