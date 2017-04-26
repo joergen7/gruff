@@ -22,6 +22,8 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 ### pooler
 
+- the main interface functions are called `checkout/1` and `checkin/2` in gruff (as in poolboy) instead of `take_member/1` and `return_member/3`
+
 ### worker_pool
 
 ## System Requirements
