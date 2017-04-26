@@ -1,6 +1,6 @@
 %% -*- erlang -*-
 %%
-%% A basic worker pool factory for Erlang to demonstrate the expressive power of
+%% A basic worker pool manager for Erlang to demonstrate the expressive power of
 %% gen_pnet.
 %%
 %% Copyright 2017 Jorgen Brandt

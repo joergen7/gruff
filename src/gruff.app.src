@@ -1,5 +1,5 @@
 {application, gruff,
- [{description, "A basic worker pool factory for Erlang to demonstrate the expressive power of gen_pnet."},
+ [{description, "A basic worker pool manager for Erlang to demonstrate the expressive power of gen_pnet."},
   {vsn, "0.1.0"},
   {registered, []},
   {applications,
