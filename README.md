@@ -11,7 +11,7 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 *Petri net model of the gruff interface and internal behavior with three worker processes.*
 
-## Differences to other process pool managers
+## Related worker pool managers
 
 Worker pool managers are a staple of Erlang applications. Here, we compare gruff with several popular Erlang worker pool managers.
 
@@ -28,6 +28,10 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 
 ### worker_pool
 
+## Features
+
+## Usage
+
 ## System Requirements
 
 - Erlang OTP 18.0 or higher
@@ -35,10 +39,10 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 
 ## Resources
 
-- [joergen7/gen_pnet](https://github.com/joergen7/gen_pnet). A generic Petri net OTP behavior.
 - [devinus/poolboy](https://github.com/devinus/poolboy). A hunky Erlang worker pool factory.
 - [seth/pooler](https://github.com/seth/pooler). An OTP process pool application.
 - [inaka/worker_pool](https://github.com/inaka/worker_pool). An Erlang worker pool.
+- [joergen7/gen_pnet](https://github.com/joergen7/gen_pnet). A generic Petri net OTP behavior.
 
 ## Authors
 
