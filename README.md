@@ -46,6 +46,7 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 - [devinus/poolboy](https://github.com/devinus/poolboy). A hunky Erlang worker pool factory.
 - [seth/pooler](https://github.com/seth/pooler). An OTP process pool application.
 - [inaka/worker_pool](https://github.com/inaka/worker_pool). An Erlang worker pool.
+- [aberman/pooly](https://github.com/aberman/pooly). An Erlang OTP process pool.
 - [joergen7/gen_pnet](https://github.com/joergen7/gen_pnet). A generic Petri net OTP behavior.
 
 ## Authors
