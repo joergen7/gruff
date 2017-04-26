@@ -11,23 +11,6 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 *Petri net model of the gruff interface and internal behavior with three worker processes.*
 
-## Related worker pool managers
-
-Worker pool managers are a staple of Erlang applications. Here, we compare gruff with several popular Erlang worker pool managers.
-
-### poolboy
-
-- checkout calls are always blocking (no non-blocking checkout)
-- non-deterministic worker allocation strategy instead of fifo/lifo allocation strategies
-- the number of workers is fixed (no overflow)
-- preference of `{ok, Result} | {error, Reason}` return values over exception handling
-
-### pooler
-
-- the main interface functions are called `checkout/1` and `checkin/2` in gruff (as in poolboy) instead of `take_member/1` and `return_member/3`
-
-### worker_pool
-
 ## Features
 
 ## Usage
@@ -35,6 +18,23 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 ### Squaring numbers
 
 ### Pooling database connections
+
+## Related worker pool managers
+
+Worker pool managers are a staple of Erlang applications. Here, we compare gruff with several popular Erlang worker pool managers.
+
+### poolboy
+
+- Checkout calls are always blocking (no non-blocking checkout).
+- Non-deterministic worker allocation strategy instead of fifo/lifo allocation strategies.
+- The number of workers is fixed in gruff (no overflow).
+- Gruff prefers `{ok, Result} | {error, Reason}` return values over exception handling.
+
+### pooler
+
+- In gruff (as in poolboy) workers have to implement a worker behavior (`gruff_wrk`) which exposes a `start_link/1` function used to start workers. In pooler, workers are specified via an `{M, F, A}` triple.
+
+### worker_pool
 
 ## System Requirements
 
