@@ -3,7 +3,7 @@
 
 [![hex.pm](https://img.shields.io/hexpm/v/gruff.svg?style=flat-square)](https://hex.pm/packages/gruff) [![Build Status](https://travis-ci.org/joergen7/gruff.svg?branch=master)](https://travis-ci.org/joergen7/gruff)
 
-This library allows the management of a fixed-size worker pool from which generic worker instances can be allocated, used, and released. Gruff automatically restarts any failing worker and a worker is automatically released if the allocating client fails prior to releasing the worker.
+This library allows the management of a fixed-size worker pool from which generic worker instances can be allocated, used, and released. Gruff automatically restarts any failing worker and a worker is automatically released if the allocating client fails.
 
 The interface and behavior of the gruff library are intentionally close to the [poolboy](https://github.com/devinus/poolboy) worker pool factory. This allows the comparison of performance, features, and implementation details. Herein, gruff is the attempt to max out simplicity and clarity in the implementation to showcase the expressive power of the [gen_pnet](https://github.com/joergen7/gen_pnet) behavior.
 
