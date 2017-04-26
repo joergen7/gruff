@@ -81,12 +81,7 @@
 %% API functions
 %%====================================================================
 
-%% @doc Starts an instance of a gruff worker pool. The workers are specified in
-%%      the module given as the `WrkMod' argument. This module is expected to
-%%      implement the `gruff_wrk' behavior. On startup the worker process
-%%      is given `WrkArgs' as an argument. `N' is the number of workers to be
-%%      maintained by this worker pool. Returns `{ok, Pid}' on success.
-%%      Returns `ignore' or `{error, Reason} otherwise.
+%% @doc Starts an instance of a gruff worker pool.
 %% @see start_link/4
 -spec start_link( WrkMod, WrkArgs, N ) -> result()
 when WrkMod  :: atom(),
@@ -103,7 +98,6 @@ when is_atom( WrkMod ), is_integer( N ), N > 0 ->
 %%      startup the worker process is given `WrkArgs' as an argument. `N' is the
 %%      number of workers to be maintained by this worker pool. Returns
 %%      `{ok, Pid}' on success. Returns `ignore' or `{error, Reason} otherwise.
-%% @see start_link/3
 -spec start_link( ServerName, WrkMod, WrkArgs, N ) -> result()
 when ServerName :: server_name(),
      WrkMod     :: atom(),
@@ -115,11 +109,7 @@ when is_atom( WrkMod ), is_integer( N ), N > 0 ->
   gen_pnet:start_link( ServerName, ?MODULE, {WrkMod, WrkArgs, N}, [] ).
 
 
-%% @doc Checks out a worker instance from the worker pool. `Pool' is the name of
-%%      the gruff process instance created with `start_link/n'. The result is
-%%      either `{ok, Pid}' or `{error, Reason}' where `Pid' is the process id of
-%%      the successfully allocated worker instance. The function times out after
-%%      5 seconds.
+%% @doc Checks out a worker instance from the worker pool.
 %% @see checkout/2
 -spec checkout( Pool ) -> {ok, pid()} | {error, _}
 when Pool :: pool().
@@ -134,7 +124,6 @@ checkout( Pool ) ->
 %%      `{error, Reason}' where `Pid' is the process id of the successfully
 %%      allocated worker instance. The function times out after `Timeout'
 %%      milliseconds.
-%% @see checkout/1
 -spec checkout( Pool, Timeout ) -> {ok, pid()} | {error, _}
 when Pool    :: pool(),
      Timeout :: non_neg_integer().
