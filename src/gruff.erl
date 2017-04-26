@@ -120,7 +120,7 @@ transaction( Pool, Fun, Timeout )
 when is_function( Fun, 1 ), is_integer( Timeout ), Timeout >= 0 ->
   case checkout( Pool, Timeout ) of
     {error, Reason} -> {error, Reason};
-    {ok, WrkPid}   ->
+    {ok, WrkPid}    ->
       try
         {ok, Fun( WrkPid )}
       catch
@@ -136,6 +136,7 @@ when is_function( Fun, 1 ), is_integer( Timeout ), Timeout >= 0 ->
 
 %% @private
 code_change( _OldVsn, NetState, _Extra ) -> {ok, NetState}.
+
 
 %% @private
 handle_call( {checkout, R}, From, _NetState )
@@ -154,6 +155,7 @@ handle_cast( {checkin, P}, _NetState ) when is_pid( P ) ->
   {noreply, #{}, #{ 'Checkin' => [P] }};
 
 handle_cast( _Request, _NetState ) -> noreply.
+
 
 %% @private
 handle_info( {'DOWN', MRef, _, _, _}, _NetState ) when is_reference( MRef ) ->
@@ -268,3 +270,4 @@ fire( cancel_busy, #{ 'Cancel' := [R], 'Busy' := [{R, M, P}] }, _ ) ->
 fire( free, #{ 'Checkin' := [P], 'Busy' := [{_, M, P}] }, _ ) ->
   true = demonitor( M ),
   {produce, #{ 'Idle' => [P] }}.
+  
