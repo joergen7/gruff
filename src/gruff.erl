@@ -109,13 +109,13 @@ when is_atom( WrkMod ), is_integer( N ), N > 0 ->
   gen_pnet:start_link( ServerName, ?MODULE, {WrkMod, WrkArgs, N}, [] ).
 
 
-%% @doc Checks out a worker instance from the worker pool.
+%% @doc Checks out a worker instance from the worker pool. Times out after five
+%%      seconds.
 %% @see checkout/2
 -spec checkout( Pool ) -> {ok, pid()} | {error, _}
 when Pool :: pool().
 
-checkout( Pool ) ->
-  checkout( Pool, ?TIMEOUT ).
+checkout( Pool ) -> checkout( Pool, ?TIMEOUT ).
 
 
 %% @doc Checks out a worker instance from the worker pool with an explicit time
@@ -138,7 +138,10 @@ checkout( Pool, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
       {error, Reason}
   end.
 
-
+%% @doc Checks in a previously checked out worker instance. The `Pool' argument
+%%      identifies the gruff instance and the `WrkPid' argument is the process
+%%      id of a worker instance, that has previously been allocated using
+%%      `checkout/n'.
 -spec checkin( Pool, WrkPid ) -> ok
 when Pool   :: pool(),
      WrkPid :: pid().
@@ -146,7 +149,9 @@ when Pool   :: pool(),
 checkin( Pool, WrkPid ) when is_pid( WrkPid ) ->
   ok = gen_pnet:cast( Pool, {checkin, WrkPid} ).
 
-
+%% @doc Checks out a worker, applies a given function to it, and checks it in
+%%      again. Times out after five seconds.
+%% @see transaction/3
 -spec transaction( Pool, Fun ) -> {ok, _} | {error, _}
 when Pool :: pool(),
      Fun  :: fun( ( _ ) -> _ ).
@@ -155,6 +160,14 @@ transaction( Pool, Fun ) when is_function( Fun, 1 ) ->
   transaction( Pool, Fun, ?TIMEOUT ).
 
 
+%% @doc Checks out a worker, applies a given function to it, and checks it in
+%%      again applying an explicit timeout. The gruff instance identified by the
+%%      `Pool' argument is used to check out a worker and apply the unary
+%%      function `Fun' to it. Afterwards, the worker instance is checked in
+%%      again. On success, `transaction/3' returns `{ok, Value}' where `Value'
+%%      is the return value of the given function `Fun'. If the function throws
+%%      an exception or the checkout fails or times out then `{error, Reason}'
+%%      is returned.
 -spec transaction( Pool, Fun, Timeout ) -> {ok, _} | {error, _}
 when Pool    :: pool(),
      Fun     :: fun( ( _ ) -> _ ),
