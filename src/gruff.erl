@@ -28,6 +28,10 @@
 -module( gruff ).
 -behavior( gen_pnet ).
 
+%%====================================================================
+%% Exports
+%%====================================================================
+
 -export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2, init/1,
           terminate/2, trigger/3] ).
 
@@ -36,9 +40,23 @@
 
 -export( [start_link/3] ).
 
+%%====================================================================
+%% Includes
+%%====================================================================
+
 -include_lib( "gen_pnet/include/gen_pnet.hrl" ).
 
+%%====================================================================
+%% Record definitions
+%%====================================================================
+
 -record( gruff_state, {nwrk, sup_pid} ).
+
+%%====================================================================
+%% Macro definitions
+%%====================================================================
+
+-define( TIMEOUT, 5000 ).
 
 %%====================================================================
 %% API functions
@@ -48,77 +66,95 @@ start_link( WrkMod, WrkArgs, N )
 when is_atom( WrkMod ), is_integer( N ), N > 0 ->
   gen_pnet:start_link( ?MODULE, {WrkMod, WrkArgs, N}, [] ).
 
-checkout( Pid ) ->
+checkout( Pool ) ->
+  checkout( Pool, ?TIMEOUT ).
+
+checkout( Pool, Timeout ) ->
   R = make_ref(),
-  ok = gen_pnet:cast( Pid, {checkout, R} ),
-  R.
-
-checkin( Pid, WrkPid ) when is_pid( WrkPid ) ->
-  ok = gen_pnet:cast( Pid, {checkin, WrkPid} ).
-
-cancel( Pid, R ) when is_reference( R ) ->
-  ok = gen_pnet:cast( Pid, {cancel, R} ).
-
-wait_for( Pid, R, Interval )
-when is_reference( R ), is_integer( Interval ), Integer >= 0 ->
-  receive
-    {checkout_ok, R, P} -> {ok, P};
-    {checkout_ok, _, P} -> ok = checkin( Pid, P ), wait_for( Pid, R, Interval )
-  after
-    Interval -> ok = cancel( Pid, R ), {error, timeout}
+  try
+    gen_pnet:call( Pool, {checkout, R}, Timeout )
+  catch
+    _:Reason ->
+      ok = gen_pnet:cast( Pool, {cancel, R} ),
+      {error, Reason}
   end.
 
-wait_for( Pid, R ) when is_reference( R ) ->
-  receive
-    {checkout_ok, R, P} -> {ok, P};
-    {checkout_ok, _, P} -> ok = checkin( Pid, P ), wait_for( Pid, R )
-  end.
-
+checkin( Pool, WrkPid ) when is_pid( WrkPid ) ->
+  gen_pnet:cast( Pool, {checkin, WrkPid} ).
 
 %%====================================================================
-%% Interface callback functions
+%% Actor interface callback functions
 %%====================================================================
 
+%% @private
 code_change( _OldVsn, NetState, _Extra ) -> {ok, NetState}.
 
-handle_call( _, _, _ ) -> {reply, {error, bad_msg}}.
+%% @private
+handle_call( {checkout, R}, From, NetState ) when is_reference( R ) ->
+  {noreply, #{}, #{ 'Checkout' => [{From, R}] }};
+
+handle_call( _Request, _From, _NetState ) ->
+  {reply, {error, bad_msg}}.
+
+
+%% @private
+handle_cast( {cancel, R}, NetState ) when is_reference( R ) ->
+  {noreply, #{}, #{ 'Cancel' => [R]}};
+
+handle_cast( {checkin, P}, NetState ) when is_pid( P ) ->
+  {noreply, #{}, #{ 'Checkin' => [P] }};
 
 handle_cast( _Request, _NetState ) -> noreply.
 
+%% @private
+handle_info( {'DOWN', MRef, _, _, _} ) when is_reference( MRef ) ->
+  {noreply, #{}, #{ 'Down' => [MRef] }};
+
+handle_info( {'EXIT', Pid, _Reason} ) when is_pid( Pid ) ->
+  {noreply, #{}, #{ 'Exit' => [Pid] }};
+
 handle_info( _Request, _NetState ) -> noreply.
 
+
+%% @private
 init( {WrkMod, WrkArgs, N} ) ->
-  process_flag( trap_exit, true ),
+  false = process_flag( trap_exit, true ),
   {ok, SupPid} = gruff_sup:start_link( WrkMod, WrkArgs ),
   GruffState = #gruff_state{ nwrk = N, sup_pid = SupPid },
   {ok, gen_pnet:new( ?MODULE, GruffState )}.
 
+
+%% @private
 terminate( _Reason, _NetState ) -> ok.
 
-trigger( _, _, _ ) -> pass.
+
+%% @private
+trigger( 'Reply', {C, P}, _NetState ) -> gen_pnet:reply( C, {ok, P} ), drop;
+trigger( _Place, _Token, _NetState )  -> pass.
 
 
 %%====================================================================
-%% Petri net callback functions
+%% Petri net structure callback functions
 %%====================================================================
 
+%% @private
 place_lst() ->
-  ['Down', 'Checkout', 'Cancel', 'Checkin', 'Exit', 'Reply', 'Waiting', 'Busy',
-   'Idle', 'Unstarted'].
+  ['Down', 'Checkout', 'Cancel', 'Checkin', 'Exit', 'Reply',
+   'Waiting', 'Busy', 'Idle', 'Unstarted'].
 
 
+%% @private
 trsn_lst() ->
-  [down_busy, down_waiting, monitor, cancel_waiting, cancel_busy, free, alloc,
-   exit_busy, exit_idle, start].
+  [down_busy, down_waiting, monitor, cancel_waiting, cancel_busy,
+   free, alloc, exit_busy, exit_idle, start].
 
 
-init_marking( 'Unstarted', #gruff_state{ nwrk = N } ) ->
-  lists:duplicate( N, t );
-
-init_marking( _, _ ) ->
-  [].
+%% @private
+init_marking( 'Unstarted', #gruff_state{ nwrk=N } ) -> lists:duplicate( N, t );
+init_marking( _, _ )                                -> [].
 
 
+%% @private
 preset( down_busy )      -> ['Down', 'Busy'];
 preset( down_waiting )   -> ['Down', 'Waiting'];
 preset( monitor )        -> ['Checkout'];
@@ -131,27 +167,55 @@ preset( exit_idle )      -> ['Exit', 'Idle'];
 preset( start )          -> ['Unstarted'].
 
 
-is_enabled( down_busy,      #{ 'Down' := [M],    'Busy' := [{_, M, _}] } ) -> true;
-is_enabled( down_waiting,   #{ 'Down' := [M],    'Waiting' := [{_, M}] } ) -> true;
-is_enabled( monitor,        _ )                                            -> true;
-is_enabled( cancel_waiting, #{ 'Cancel' := [R],  'Waiting' := [{R, _}] } ) -> true;
-is_enabled( cancel_busy,    #{ 'Cancel' := [R],  'Busy' := [{R, _, _}] } ) -> true;
-is_enabled( free,           #{ 'Checkin' := [P], 'Busy' := [{_, _, P}] } ) -> true;
-is_enabled( alloc,          _ )                                            -> true;
-is_enabled( exit_busy,      #{ 'Exit' := [P],    'Busy' := [{_, _, P}] } ) -> true;
-is_enabled( exit_idle,      #{ 'Exit' := [P],    'Idle' := [P] } )         -> true;
-is_enabled( start,          _ )                                            -> true;
-is_enabled( _,              _ )                                            -> false.
+%% @private
+is_enabled( down_busy,      #{ 'Down'    := [M], 'Busy'    := [{_, M, _}] } ) -> true;
+is_enabled( down_waiting,   #{ 'Down'    := [M], 'Waiting' := [{_, _, M}] } ) -> true;
+is_enabled( monitor,        _ )                                               -> true;
+is_enabled( cancel_waiting, #{ 'Cancel'  := [R], 'Waiting' := [{_, R, _}] } ) -> true;
+is_enabled( cancel_busy,    #{ 'Cancel'  := [R], 'Busy'    := [{R, _, _}] } ) -> true;
+is_enabled( free,           #{ 'Checkin' := [P], 'Busy'    := [{_, _, P}] } ) -> true;
+is_enabled( alloc,          _ )                                               -> true;
+is_enabled( exit_busy,      #{ 'Exit'    := [P], 'Busy'    := [{_, _, P}] } ) -> true;
+is_enabled( exit_idle,      #{ 'Exit'    := [P], 'Idle'    := [P] } )         -> true;
+is_enabled( start,          _ )                                               -> true;
+is_enabled( _,              _ )                                               -> false.
 
 
+%% @private
 fire( start, #{ 'Unstarted' := [t] }, #gruff_state{ sup_pid = SupPid } ) ->
-
-  % start new worker under supervisor
   {ok, WrkPid} = supervisor:start_child( SupPid, [] ),
-
-  % link to newly started worker process
   true = link( WrkPid ),
+  {produce, #{ 'Idle' => [WrkPid] }};
 
-  {produce, #{ 'Idle' => [WrkPid] }}.
+fire( exit_idle, #{ 'Exit' := [P], 'Idle' := [P] } ) ->
+  {produce, #{ 'Unstarted' => [t] }};
 
+fire( exit_busy, #{ 'Exit' := [P], 'Busy' := [_R, M, P] } ) ->
+  true = demonitor( M ),
+  {produce, #{ 'Unstarted' => [t] }};
 
+fire( down_waiting, #{ 'Down' := [M], 'Waiting' := [{_C, _R, M}] } ) ->
+  {produce, #{}};
+
+fire( cancel_waiting, #{ 'Cancel' := [R], 'Waiting' := [{_C, R, M}] } ) ->
+  true = demonitor( M ),
+  {produce, #{}};
+
+fire( monitor, #{ 'Checkout' := [{C, R}] } ) ->
+  C = {ClientPid, _Tag},
+  M = monitor( process, ClientPid ),
+  {produce, #{ 'Waiting' => [{C, R, M}] }};
+
+fire( down_busy, #{ 'Down' := [M], 'Busy' := [{_R, M, P}] } ) ->
+  {produce, #{ 'Idle' => [P] }};
+
+fire( alloc, #{'Waiting' := [{C, R, M}], 'Idle' := [P] } ) ->
+  {produce, #{ 'Reply' => [{C, P}], 'Busy' => [{R, M, P}] }};
+
+fire( cancel_busy, #{ 'Cancel' := [R], 'Busy' := [{R, M, P}] } ) ->
+  true = demonitor( M ),
+  {produce, #{ 'Idle' => [P] }};
+
+fire( free, #{ 'Checkin' := [P], 'Busy' := [{_R, M, P}] } ) ->
+  true = demonitor( M ),
+  {produce, #{ 'Idle' => [P] }}.
