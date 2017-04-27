@@ -15,9 +15,21 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 ## Usage
 
-### Squaring numbers
+### Adding gruff to a Project
 
-### Pooling database connections
+#### rebar3
+
+To integrate gruff into a rebar3 managed project change the `deps` entry in your application's `rebar.config` file to include the tuple `{gruff, "0.1.0"}`.
+
+    {deps, [{gruff, "0.1.0"}]}.
+
+#### mix
+
+    {:gruff, "~> 0.1.0"}
+
+### Example: Squaring numbers
+
+### Example: Pooling database connections
 
 ## Related worker pool managers
 
@@ -44,6 +56,8 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 - The workers under worker_pool have to implement either the gen_server or gen_fsm behavior in contrast to poolboy and gruff, where a worker behavior has to be implemented and in contrast to pooler which manages generic worker modules.
 - In worker_pool, restarting of failed workers is performed by the supervisor process while poolboy and gruff detect and restart failed workers as a top-level activity.
 - Accordingly, the user has complete control over the supervisor process's restart strategy.
+
+## Conclusion
 
 ## System Requirements
 
