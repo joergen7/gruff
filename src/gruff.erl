@@ -57,7 +57,7 @@
 %% Type definitions
 %%====================================================================
 
--type pool() :: atom()
+-type name() :: atom()
               | {atom(), atom()}
               | {global, _}
               | {via, atom(), _}
@@ -112,70 +112,70 @@ when is_atom( WrkMod ), is_integer( N ), N > 0 ->
 %% @doc Checks out a worker instance from the worker pool. Times out after five
 %%      seconds.
 %% @see checkout/2
--spec checkout( Pool ) -> {ok, pid()} | {error, _}
-when Pool :: pool().
+-spec checkout( Name ) -> {ok, pid()} | {error, _}
+when Name :: name().
 
-checkout( Pool ) -> checkout( Pool, ?TIMEOUT ).
+checkout( Name ) -> checkout( Name, ?TIMEOUT ).
 
 
 %% @doc Checks out a worker instance from the worker pool with an explicit time
-%%      out interval. `Pool' is the name of the gruff process instance created
+%%      out interval. `Name' is the name of the gruff process instance created
 %%      with `start_link/n'. The result is either `{ok, Pid}' or
 %%      `{error, Reason}' where `Pid' is the process id of the successfully
 %%      allocated worker instance. The function times out after `Timeout'
 %%      milliseconds.
--spec checkout( Pool, Timeout ) -> {ok, pid()} | {error, _}
-when Pool    :: pool(),
+-spec checkout( Name, Timeout ) -> {ok, pid()} | {error, _}
+when Name    :: name(),
      Timeout :: non_neg_integer().
 
-checkout( Pool, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
+checkout( Name, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
   R = make_ref(),
   try
-    gen_pnet:call( Pool, {checkout, R}, Timeout )
+    gen_pnet:call( Name, {checkout, R}, Timeout )
   catch
     _:Reason ->
-      ok = gen_pnet:cast( Pool, {cancel, R} ),
+      ok = gen_pnet:cast( Name, {cancel, R} ),
       {error, Reason}
   end.
 
-%% @doc Checks in a previously checked out worker instance. The `Pool' argument
+%% @doc Checks in a previously checked out worker instance. The `Name' argument
 %%      identifies the gruff instance and the `WrkPid' argument is the process
 %%      id of a worker instance, that has previously been allocated using
 %%      `checkout/n'.
--spec checkin( Pool, WrkPid ) -> ok
-when Pool   :: pool(),
+-spec checkin( Name, WrkPid ) -> ok
+when Name   :: name(),
      WrkPid :: pid().
 
-checkin( Pool, WrkPid ) when is_pid( WrkPid ) ->
-  ok = gen_pnet:cast( Pool, {checkin, WrkPid} ).
+checkin( Name, WrkPid ) when is_pid( WrkPid ) ->
+  ok = gen_pnet:cast( Name, {checkin, WrkPid} ).
 
 %% @doc Checks out a worker, applies a given function to it, and checks it in
 %%      again. Times out after five seconds.
 %% @see transaction/3
--spec transaction( Pool, Fun ) -> {ok, _} | {error, _}
-when Pool :: pool(),
+-spec transaction( Name, Fun ) -> {ok, _} | {error, _}
+when Name :: name(),
      Fun  :: fun( ( _ ) -> _ ).
 
-transaction( Pool, Fun ) when is_function( Fun, 1 ) ->
-  transaction( Pool, Fun, ?TIMEOUT ).
+transaction( Name, Fun ) when is_function( Fun, 1 ) ->
+  transaction( Name, Fun, ?TIMEOUT ).
 
 
 %% @doc Checks out a worker, applies a given function to it, and checks it in
 %%      again applying an explicit timeout. The gruff instance identified by the
-%%      `Pool' argument is used to check out a worker and apply the unary
+%%      `Name' argument is used to check out a worker and apply the unary
 %%      function `Fun' to it. Afterwards, the worker instance is checked in
 %%      again. On success, `transaction/3' returns `{ok, Value}' where `Value'
 %%      is the return value of the given function `Fun'. If the function throws
 %%      an exception or the checkout fails or times out then `{error, Reason}'
 %%      is returned.
--spec transaction( Pool, Fun, Timeout ) -> {ok, _} | {error, _}
-when Pool    :: pool(),
+-spec transaction( Name, Fun, Timeout ) -> {ok, _} | {error, _}
+when Name    :: name(),
      Fun     :: fun( ( _ ) -> _ ),
      Timeout :: non_neg_integer().
 
-transaction( Pool, Fun, Timeout )
+transaction( Name, Fun, Timeout )
 when is_function( Fun, 1 ), is_integer( Timeout ), Timeout >= 0 ->
-  case checkout( Pool, Timeout ) of
+  case checkout( Name, Timeout ) of
     {error, Reason} -> {error, Reason};
     {ok, WrkPid}    ->
       try
@@ -183,7 +183,7 @@ when is_function( Fun, 1 ), is_integer( Timeout ), Timeout >= 0 ->
       catch
         _:Reason -> {error, Reason}
       after
-        ok = checkin( Pool, WrkPid )
+        ok = checkin( Name, WrkPid )
       end
   end.
 
