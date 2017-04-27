@@ -27,11 +27,11 @@ To integrate gruff into a rebar3 managed project change the `deps` entry in your
 
     {:gruff, "~> 0.1.0"}
 
-### Example: Squaring numbers
+### Example: Squaring Numbers
 
-### Example: Pooling database connections
+### Example: Pooling Database Connections
 
-## Related worker pool managers
+## Related Worker Pool Managers
 
 Worker pool managers are a staple of Erlang applications. Here, we compare gruff with several popular Erlang worker pool managers.
 
