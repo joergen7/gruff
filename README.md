@@ -9,7 +9,7 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 ![gruff Petri net model](priv/gruff_pnet.png)
 
-*Petri net model of the gruff interface and internal behavior with three worker processes.*
+*Figure 1: Petri net model of the gruff interface and internal behavior with three worker processes.*
 
 ## Features
 
@@ -23,7 +23,7 @@ Allowing clients to worker processes implies that either may fail before the wor
 
 ### Simple and Predictable
 
-
+Many worker pool managers are available in the Erlang ecosystem (see [Related Worker Pool Managers](#related-worker-pool-managers) section). The distinguishing feature of gruff is its simplicity. The Petri net in Figure 1 describes the behavior of this implementation exhaustively. So, verifying that gruff's behavior is correct is essentially looking up whether all graph components in Figure 1 also appear in the code and that the links and link labels are transcribed correctly. The details of synchronization, process life-cycle, and message-box sitting in Erlang appear only sporadically anymore.
 
 ## Usage
 
@@ -51,7 +51,7 @@ We show how to configure the application, how to create a module implementing th
 
 ![example_application](priv/example_application.png)
 
-*Process hierarchy of the example application. Black connections are child relations while blue connections are links. The application has three named processes: `example_sup`, `add`, and `square`.*
+*Figure 2: Process hierarchy of the example application. Black connections are child relations while blue connections are links. The application has three named processes: `example_sup`, `add`, and `square`.*
 
 #### example.app
 
