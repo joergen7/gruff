@@ -43,7 +43,7 @@ To integrate gruff into a rebar3 managed project change the `deps` entry in your
 {application, example,
  [{description, "A gruff example application"},
   {vsn, "0.1.0"},
-  {registered, [example_sup]},
+  {registered, [example_sup, add, square]},
   {mod, { example, []}},
   {applications,
    [kernel,
@@ -52,16 +52,8 @@ To integrate gruff into a rebar3 managed project change the `deps` entry in your
   {modules, [example, add_wrk, square_wrk]},
   {env,[
         {pool_lst, [
-                    #{ id   => add,
-                       size => 8,
-                       mod  => add_wrk,
-                       args => []
-                     },
-                    #{ id   => square,
-                       size => 4,
-                       mod  => square_wrk,
-                       args => []
-                     }
+                    #{ id => add,    size => 8, mod => add_wrk,    args => [] },
+                    #{ id => square, size => 4, mod => square_wrk, args => [] }
                    ]}
        ]}
  ]}.
@@ -74,18 +66,13 @@ To integrate gruff into a rebar3 managed project change the `deps` entry in your
 -behavior( application ).
 -behavior( supervisor ).
 
--export( [start/0, stop/0, get_name/1, add/3, square/2] ).
+-export( [start/0, stop/0, add/3, square/2] ).
 -export( [start/2, stop/1] ).
 -export( [init/1] ).
 
 start() -> application:start( ?MODULE ).
 
 stop() -> application:stop( ?MODULE ).
-
-get_name( Id ) ->
-  ChildLst = supervisor:which_children( example_sup ),
-  {_, Pid, _, _} = lists:keyfind( Id, 1, ChildLst ),
-  Pid.
 
 add( Name, A, B ) ->
   F = fun( Wrk ) ->
@@ -106,25 +93,26 @@ stop( _State ) -> ok.
 
 init( [] ) ->
 
-  {ok, PoolLst} = application:get_env( example, pool_lst ),
+    {ok, PoolLst} = application:get_env( example, pool_lst ),
 
-  ChildSpecs = [#{ id      => Id,
-                  start    => {gruff, start_link, [WrkMod, WrkArgs, Size]},
-                  restart  => permanent,
-                  shutdown => 5000,
-                  type     => worker,
-                  modules  => [gruff]
-                } || #{ id   := Id,
-                        size := Size,
-                        mod  := WrkMod,
-                        args := WrkArgs
-                      } <- PoolLst],
+    ChildSpecs = [#{ id      => Id,
+                     start    => {gruff, start_link, [{local, Id}, WrkMod,
+                                                      WrkArgs, Size]},
+                     restart  => permanent,
+                     shutdown => 5000,
+                     type     => worker,
+                     modules  => [gruff]
+                   } || #{ id   := Id,
+                           size := Size,
+                           mod  := WrkMod,
+                           args := WrkArgs
+                         } <- PoolLst],
 
-  SupFlags = #{ strategy  => one_for_one,
-                intensity => 10,
-                period    => 10 },
+    SupFlags = #{ strategy  => one_for_one,
+                  intensity => 10,
+                  period    => 10 },
 
-  {ok, {SupFlags, ChildSpecs}}.
+    {ok, {SupFlags, ChildSpecs}}.
 ```
 
 #### add_wrk.erl
