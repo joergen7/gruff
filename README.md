@@ -21,11 +21,15 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 To integrate gruff into a rebar3 managed project change the `deps` entry in your application's `rebar.config` file to include the tuple `{gruff, "0.1.0"}`.
 
-    {deps, [{gruff, "0.1.0"}]}.
+```erlang
+{deps, [{gruff, "0.1.0"}]}.
+```
 
 #### mix
 
-    {:gruff, "~> 0.1.0"}
+```elixir
+{:gruff, "~> 0.1.0"}
+```
 
 ### Example: Arithmetics
 
