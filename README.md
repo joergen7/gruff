@@ -66,7 +66,7 @@ To integrate gruff into a rebar3 managed project change the `deps` entry in your
 -behavior( application ).
 -behavior( supervisor ).
 
--export( [start/0, stop/0, add/3, square/2] ).
+-export( [start/0, stop/0, add/2, square/1] ).
 -export( [start/2, stop/1] ).
 -export( [init/1] ).
 
@@ -74,17 +74,17 @@ start() -> application:start( ?MODULE ).
 
 stop() -> application:stop( ?MODULE ).
 
-add( Name, A, B ) ->
+add( A, B ) ->
   F = fun( Wrk ) ->
         gen_server:call( Wrk, {add, A, B} )
       end,
-  gruff:transaction( Name, F ).
+  gruff:transaction( add, F ).
 
-square( Name, X ) ->
+square( X ) ->
   F = fun( Wrk ) ->
         gen_server:call( Wrk, {square, X} )
       end,
-  gruff:transaction( Name, F ).
+  gruff:transaction( square, F ).
 
 start( _StartType, _StartArgs ) ->
   supervisor:start_link( {local, example_sup}, ?MODULE, [] ).
@@ -161,12 +161,10 @@ terminate( _Reason, _State )             -> ok.
 
     example:start().
 
-    AddName = example:get_name( add ).
-    example:add( AddName, 1, 2 ).
+    example:add( 1, 2 ).
     {ok, 3}
 
-    SquareName = example:get_name( square ).
-    example:square( SquareName, 4 ).
+    example:square( 4 ).
     {ok, 16}
 
     example:stop().
