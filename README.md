@@ -23,7 +23,7 @@ Allocating worker processes for client processes implies that either may fail be
 
 ### Simple and Predictable
 
-Many worker pool managers are available in the Erlang ecosystem (see [Related Worker Pool Managers](#related-worker-pool-managers) section). The distinguishing feature of gruff is its simplicity. The Petri net in Figure 1 describes its behavior exhaustively. So, verifying that gruff is correct boils down to looking up whether all graph components in Figure 1 also appear in the source and that the links and link labels are transcribed correctly. The details of synchronization, process life-cycle, and message-box sitting in Erlang appear only sporadically anymore.
+Many worker pool managers are available in the Erlang ecosystem (see [Related Worker Pool Managers](#related-worker-pool-managers) section). The distinguishing feature of gruff is its simplicity. The Petri net in Figure 1 describes its behavior exhaustively. So, verifying that gruff is correct boils down to looking up whether all graph components in Figure 1 also appear in the source and that the edges and edge labels are transcribed correctly. The details of synchronization, process life-cycle, and message-box sitting in Erlang appear only sporadically anymore.
 
 ## Usage
 
