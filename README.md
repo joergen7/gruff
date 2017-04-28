@@ -27,9 +27,151 @@ To integrate gruff into a rebar3 managed project change the `deps` entry in your
 
     {:gruff, "~> 0.1.0"}
 
-### Example: Squaring Numbers
+### Example: Arithmetics
 
-### Example: Pooling Database Connections
+#### example.app
+
+    {application, example,
+     [{description, "A gruff example application"},
+      {vsn, "0.1.0"},
+      {registered, [example_sup]},
+      {mod, { example, []}},
+      {applications,
+       [kernel,
+        stdlib
+       ]},
+      {modules, [example, add_wrk, square_wrk]},
+      {env,[
+            {pool_lst, [
+                        #{ id   => add,
+                           size => 8,
+                           mod  => add_wrk,
+                           args => []
+                         },
+                        #{ id   => square,
+                           size => 4,
+                           mod  => square_wrk,
+                           args => []
+                         }
+                       ]}
+           ]}
+     ]}.
+
+
+#### example.erl
+
+    -module( example ).
+    -behavior( application ).
+    -behavior( supervisor ).
+
+    -export( [start/0, stop/0, get_name/1, add/3, square/2] ).
+    -export( [start/2, stop/1] ).
+    -export( [init/1] ).
+
+    start() -> application:start( ?MODULE ).
+
+    stop() -> application:stop( ?MODULE ).
+
+    get_name( Id ) ->
+      ChildLst = supervisor:which_children( example_sup ),
+      {_, Pid, _, _} = lists:keyfind( Id, 1, ChildLst ),
+      Pid.
+
+    add( Name, A, B ) ->
+      F = fun( Wrk ) ->
+            gen_server:call( Wrk, {add, A, B} )
+          end,
+      gruff:transaction( Name, F ).
+
+    square( Name, X ) ->
+      F = fun( Wrk ) ->
+            gen_server:call( Wrk, {square, X} )
+          end,
+      gruff:transaction( Name, F ).
+
+    start( _StartType, _StartArgs ) ->
+      supervisor:start_link( {local, example_sup}, ?MODULE, [] ).
+
+    stop( _State ) -> ok.
+
+    init( [] ) ->
+
+        {ok, PoolLst} = application:get_env( example, pool_lst ),
+
+        ChildSpecs = [#{ id      => Id,
+                        start    => {gruff, start_link, [WrkMod, WrkArgs, Size]},
+                        restart  => permanent,
+                        shutdown => 5000,
+                        type     => worker,
+                        modules  => [gruff]
+                      } || #{ id   := Id,
+                              size := Size,
+                              mod  := WrkMod,
+                              args := WrkArgs
+                            } <- PoolLst],
+
+        SupFlags = #{ strategy  => one_for_one,
+                      intensity => 10,
+                      period    => 10 },
+
+        {ok, {SupFlags, ChildSpecs}}.
+
+
+#### add_wrk.erl
+
+    -module( add_wrk ).
+    -behaviour( gruff_wrk ).
+    -behaviour( gen_server ).
+
+    -export( [start_link/1] ).
+    -export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2, init/1,
+              terminate/2] ).
+
+    start_link( WrkArgs ) -> gen_server:start_link( ?MODULE, WrkArgs, [] ).
+
+    code_change( _OldVsn, State, _Extra )    -> {ok, State}.
+    handle_call( {add, A, B}, _From, State ) -> {reply, A+B, State}.
+    handle_cast( _Request, State )           -> {noreply, State}.
+    handle_info( _Info, State )              -> {noreply, State}.
+    init( _Args )                            -> {ok, []}.
+    terminate( _Reason, _State )             -> ok.
+
+
+#### square_wrk.erl
+
+    -module( square_wrk ).
+    -behaviour( gruff_wrk ).
+    -behaviour( gen_server ).
+
+    -export( [start_link/1] ).
+    -export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2, init/1,
+              terminate/2] ).
+
+    start_link( WrkArgs ) -> gen_server:start_link( ?MODULE, WrkArgs, [] ).
+
+    code_change( _OldVsn, State, _Extra )    -> {ok, State}.
+    handle_call( {square, X}, _From, State ) -> {reply, X*X, State}.
+    handle_cast( _Request, State )           -> {noreply, State}.
+    handle_info( _Info, State )              -> {noreply, State}.
+    init( _Args )                            -> {ok, []}.
+    terminate( _Reason, _State )             -> ok.
+
+#### Using the Example Application
+
+    example:start().
+
+    AddName = example:get_name( add ).
+    example:add( AddName, 1, 2 ).
+    {ok, 3}
+
+    SquareName = example:get_name( square ).
+    example:square( SquareName, 4 ).
+    {ok, 16}
+
+    example:stop().
+
+![example_application](priv/example_application.png)
+*Process hierarchy of the example application.*
 
 ## Related Worker Pool Managers
 
