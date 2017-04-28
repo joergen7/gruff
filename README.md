@@ -31,11 +31,15 @@ To integrate gruff into a rebar3 managed project change the `deps` entry in your
 {:gruff, "~> 0.1.0"}
 ```
 
-### Example: Arithmetics
+### Example: Adding and Squaring Numbers
+
+Here, we set up an example application for adding and squaring numbers. The application creates two worker pools of different sizes: One pool for adding a pair of numbers with eight worker processes, and one for squaring a number with four worker processes. The configuration of the two worker pools is defined in the environment variables of the application and the two worker pools as well as the application supervisor are registered processes named `example_sup`, `add`, and `square`.
+
+We show how to configure the application, how to create a module implementing the application and supervisor callbacks as well as some API functions, and how to create the adding and squaring modules as gen_server implementations. Eventually, we demonstrate how to start the application, query both pools, and shut it down again.
 
 ![example_application](priv/example_application.png)
 
-*Process hierarchy of the example application.*
+*Process hierarchy of the example application. Black connections are child relations while blue connections are links. The application has three named processes: `example_sup`, `add`, and `square`.*
 
 #### example.app
 
@@ -95,7 +99,7 @@ init( [] ) ->
 
     {ok, PoolLst} = application:get_env( example, pool_lst ),
 
-    ChildSpecs = [#{ id      => Id,
+    ChildSpecs = [#{ id       => Id,
                      start    => {gruff, start_link, [{local, Id}, WrkMod,
                                                       WrkArgs, Size]},
                      restart  => permanent,
