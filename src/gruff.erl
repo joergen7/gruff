@@ -102,7 +102,7 @@ when is_atom( WrkMod ), is_integer( N ), N > 0 ->
 %%      This module is expected to implement the `gruff_wrk' behavior. On
 %%      startup the worker process is given `WrkArgs' as an argument. `N' is the
 %%      number of workers to be maintained by this worker pool. Returns
-%%      `{ok, Pid}' on success. Returns `ignore' or `{error, Reason} otherwise.
+%%      `{ok, Pid}' on success. Returns `ignore' or `{error, Reason}' otherwise.
 -spec start_link( ServerName, WrkMod, WrkArgs, N ) -> result()
 when ServerName :: server_name(),
      WrkMod     :: atom(),
