@@ -15,9 +15,11 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 ### Balances Load on a Fixed Number of Processes
 
-Concurrent applications often comprise different processes with different characteristics. While some processes are long-lived others are only ephemeral. While some processes are cheap to initialize and use only little memory others have a high start-up cost or take up a lot of memory. In the consequence, certain process types can or should be started only in a limited number. The remaining components of the system share these processes among them. gruff manages a population of such processes. This means that a population of processes is started once and access to these processes is ensured to be mutually exclusive. This means, ideally, that the startup cost has to paid only once and that the cost of running these processes is independent of the system load.
+Concurrent applications often comprise different processes with different characteristics. While some processes are long-lived others are only ephemeral. While some processes are cheap to initialize and use only little memory others have a high start-up cost or take up a lot of memory. In the consequence, certain process types can or should be started only in a limited number. The remaining components of the system share these processes among them. gruff manages a population of such processes. This means that a population of processes is started once and access to these processes is ensured to be mutually exclusive. This means, ideally, that the startup cost has to be paid only once and that the cost of running these processes is independent of the system load.
 
 ### Automatizes Error Handling for Both Client and Worker Failures
+
+Allowing clients to worker processes implies that either may fail before the worker leaves its critical section. If the worker fails a new worker needs to be started so that the number of worker processes remains constant. If the client fails the worker needs to be freed immediately, so that it can be used by waiting clients. Detecting client failure is achieved by creating a monitor on every client prior to allocating a worker process. If a waiting client fails, it is simply evicted from the waiting queue. If a client with an allocated worker process fails, the process is freed. Detecting worker failure is achieved by linking to all workers. If a worker fails, a new worker is started in its place no matter whether the worker was idle or busy at the time of failure.
 
 ### Simple and Predictable
 
