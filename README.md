@@ -29,6 +29,10 @@ To integrate gruff into a rebar3 managed project change the `deps` entry in your
 
 ### Example: Arithmetics
 
+![example_application](priv/example_application.png)
+
+*Process hierarchy of the example application.*
+
 #### example.app
 
 ```erlang
@@ -174,10 +178,6 @@ terminate( _Reason, _State )             -> ok.
     {ok, 16}
 
     example:stop().
-
-![example_application](priv/example_application.png)
-
-*Process hierarchy of the example application.*
 
 ## Related Worker Pool Managers
 
