@@ -5,13 +5,21 @@
 
 This library allows the management of a fixed-size worker pool from which generic worker instances can be allocated, used, and released. gruff automatically restarts any failing worker and a worker is automatically released if the allocating client fails.
 
-The interface and behavior of the gruff library are intentionally close to the [poolboy](https://github.com/devinus/poolboy) worker pool factory and bears resemblance to other Erlang worker pool managers like [pooler](https://github.com/seth/pooler) or [worker_pool](https://github.com/inaka/worker_pool). This allows the comparison of performance, features, and implementation details. Herein, gruff is the attempt to max out simplicity and clarity in the implementation to showcase the expressive power of the [gen_pnet](https://github.com/joergen7/gen_pnet) behavior.
+The interface and behavior of the gruff library are intentionally close to the [poolboy](https://github.com/devinus/poolboy) worker pool factory and bears resemblance to other Erlang worker pool managers like [pooler](https://github.com/seth/pooler) or [worker_pool](https://github.com/inaka/worker_pool). This allows the comparison of performance, features, and implementation details. Herein, gruff is the attempt to max out simplicity and clarity in the implementation to demonstrate the expressive power of the [gen_pnet](https://github.com/joergen7/gen_pnet) behavior.
 
 ![gruff Petri net model](priv/gruff_pnet.png)
 
 *Petri net model of the gruff interface and internal behavior with three worker processes.*
 
 ## Features
+
+### Workers Are Reused Instead of Restarted
+
+### Balances Load on a Fixed Number of Workers
+
+### Automatizes Error Handling for Both Client and Worker Failures
+
+### Simple and Predictable
 
 ## Usage
 
