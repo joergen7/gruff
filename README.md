@@ -15,7 +15,7 @@ The interface and behavior of the gruff library are intentionally close to the [
 
 ### Balances Load on a Fixed Number of Processes
 
-Concurrent applications often comprise processes with different characteristics. While some processes are long-lived others are only ephemeral. While some processes are cheap to initialize and use only little memory others have a high start-up cost or take up a lot of memory. In the consequence, certain process types can or should be started only in a limited number. The remaining components of the system share these processes among them. gruff manages a population of such processes. This means that a population of processes is started once and access to these processes is ensured to be mutually exclusive. This means, ideally, that the startup cost has to be paid only once and that the cost of running these processes is independent of the system load.
+Concurrent applications often comprise processes with different characteristics. While some processes are long-lived others are only ephemeral. While some processes are cheap to initialize and use only little memory others have a high start-up cost or take up a lot of memory. In the consequence, certain process types can or should be started only in a limited number. The remaining components of the system share these processes among them. gruff starts a population of processes once and access to these processes is ensured to be mutually exclusive. This means, ideally, that the startup cost has to be paid only once and that the cost of running these processes is independent of the system load.
 
 ### Automatizes Error Handling for Both Client and Worker Failures
 
