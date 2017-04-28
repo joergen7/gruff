@@ -1,5 +1,5 @@
 # gruff
-###### A basic worker pool manager for Erlang to demonstrate the expressive power of gen_pnet.
+###### A basic worker pool manager for Erlang to showcase gen_pnet.
 
 [![hex.pm](https://img.shields.io/hexpm/v/gruff.svg?style=flat-square)](https://hex.pm/packages/gruff) [![Build Status](https://travis-ci.org/joergen7/gruff.svg?branch=master)](https://travis-ci.org/joergen7/gruff)
 

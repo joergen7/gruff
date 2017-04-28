@@ -1,7 +1,6 @@
 %% -*- erlang -*-
 %%
-%% A basic worker pool manager for Erlang to demonstrate the expressive power of
-%% gen_pnet.
+%% A basic worker pool manager for Erlang to showcase gen_pnet.
 %%
 %% Copyright 2017 Jorgen Brandt
 %%
