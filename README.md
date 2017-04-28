@@ -52,10 +52,11 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 
 ### worker_pool
 
-- worker_pool can be configured to issue warnings if workers are kept allocated for too long.
+- worker_pool does not directly expose the worker process to the allocating client. Instead, it manages message passing to and from the worker process by wrapping the calling and event handling APIs of gen_server and gen_fsm.
 - The workers under worker_pool have to implement either the gen_server or gen_fsm behavior in contrast to poolboy and gruff, where a worker behavior has to be implemented and in contrast to pooler which manages generic worker modules.
 - In worker_pool, restarting of failed workers is performed by the supervisor process while poolboy and gruff detect and restart failed workers as a top-level activity.
 - Accordingly, the user has complete control over the supervisor process's restart strategy.
+- worker_pool can be configured to issue warnings if workers take too long to generate replies.
 
 ## Conclusion
 
