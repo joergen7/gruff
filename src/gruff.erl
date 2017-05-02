@@ -237,7 +237,7 @@ handle_info( _Request, _NetState ) -> noreply.
 
 %% @private
 init( {{M, F, A}, N} )
-when is_atom( M ), is_function( F ), is_list( A ),
+when is_atom( M ), is_atom( F ), is_list( A ),
      is_integer( N ), N > 0 ->
   false = process_flag( trap_exit, true ),
   {ok, SupPid} = gruff_sup:start_link( {M, F, A} ),
