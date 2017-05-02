@@ -38,7 +38,7 @@
 -export( [place_lst/0, trsn_lst/0, init_marking/2, preset/1, is_enabled/2,
           fire/3] ).
 
--export( [start_link/3, start_link/4, checkout/1, checkout/2, checkin/2,
+-export( [start_link/2, start_link/3, checkout/1, checkout/2, checkin/2,
           transaction/2, transaction/3] ).
 
 
@@ -88,30 +88,35 @@
 
 %% @doc Starts an instance of a gruff worker pool.
 %% @see start_link/4
--spec start_link( WrkMod, WrkArgs, N ) -> result()
-when WrkMod  :: atom(),
-     WrkArgs :: _,
-     N       :: pos_integer().
+-spec start_link( {M, F, A}, N ) -> result()
+when M :: atom(),
+     F :: fun(),
+     A :: [_],
+     N :: pos_integer().
 
-start_link( WrkMod, WrkArgs, N )
-when is_atom( WrkMod ), is_integer( N ), N > 0 ->
-  gen_pnet:start_link( ?MODULE, {WrkMod, WrkArgs, N}, [] ).
+start_link( {M, F, A}, N )
+when is_atom( M ), is_function( F ), is_list( A ),
+     is_integer( N ), N > 0 ->
+  gen_pnet:start_link( ?MODULE, {{M, F, A}, N}, [] ).
 
 %% @doc Starts an instance of a gruff worker pool registered as `ServerName'.
-%%      The workers are specified in the module given as the `WrkMod' argument.
-%%      This module is expected to implement the `gruff_wrk' behavior. On
-%%      startup the worker process is given `WrkArgs' as an argument. `N' is the
-%%      number of workers to be maintained by this worker pool. Returns
-%%      `{ok, Pid}' on success. Returns `ignore' or `{error, Reason}' otherwise.
--spec start_link( ServerName, WrkMod, WrkArgs, N ) -> result()
+%%      The workers are specified in the `{M, F, A}' triple denoting the worker
+%%      module `M', the start function `F', and the start function's argument
+%%      list `A'. `N' is the number of workers to be maintained by this worker
+%%      pool. Returns `{ok, Pid}' on success. Returns `ignore' or
+%%      `{error, Reason}' otherwise.
+-spec start_link( ServerName, {M, F, A}, N ) -> result()
 when ServerName :: server_name(),
-     WrkMod     :: atom(),
-     WrkArgs    :: _,
+     M          :: atom(),
+     F          :: fun(),
+     A          :: [_],
      N          :: pos_integer().
 
-start_link( ServerName, WrkMod, WrkArgs, N )
-when is_atom( WrkMod ), is_integer( N ), N > 0 ->
-  gen_pnet:start_link( ServerName, ?MODULE, {WrkMod, WrkArgs, N}, [] ).
+start_link( ServerName, {M, F, A}, N )
+when is_tuple( ServerName ),
+     is_atom( M ), is_function( F ), is_list( A ),
+     is_integer( N ), N > 0 ->
+  gen_pnet:start_link( ServerName, ?MODULE, {{M, F, A}, N}, [] ).
 
 
 %% @doc Checks out a worker instance from the worker pool. Times out after five
@@ -231,9 +236,11 @@ handle_info( _Request, _NetState ) -> noreply.
 
 
 %% @private
-init( {WrkMod, WrkArgs, N} ) ->
+init( {{M, F, A}, N} )
+when is_atom( M ), is_function( F ), is_list( A ),
+     is_integer( N ), N > 0 ->
   false = process_flag( trap_exit, true ),
-  {ok, SupPid} = gruff_sup:start_link( WrkMod, WrkArgs ),
+  {ok, SupPid} = gruff_sup:start_link( {M, F, A} ),
   GruffState = #gruff_state{ nwrk=N, sup_pid=SupPid },
   {ok, gen_pnet:new( ?MODULE, GruffState )}.
 

@@ -27,7 +27,7 @@
 -module( gruff_sup ).
 -behaviour( supervisor ).
 
--export( [start_link/2] ).
+-export( [start_link/1] ).
 -export( [init/1] ).
 
 
@@ -35,11 +35,12 @@
 %% API functions
 %%====================================================================
 
-%% @doc Starts an instance of a gruff supervisor. The argument `WrkMod' is the
-%%      worker module name and the `WrkArgs' argument is handed to the worker
-%%      process on startup.
-start_link( WrkMod, WrkArgs ) when is_atom( WrkMod ) ->
-    supervisor:start_link( ?MODULE, {WrkMod, WrkArgs} ).
+%% @doc Starts an instance of a gruff supervisor. The `{M, F, A}' argument
+%%      triple specifies how the worker processes are started. Herein, `M'
+%%      denotes the worker's module name, `F' is the start function, and `A' is
+%%      the argument list handed to the worker process on startup.
+start_link( {M, F, A} ) when is_atom( M ), is_function( F ), is_list( A ) ->
+    supervisor:start_link( ?MODULE, {M, F, A} ).
 
 
 %%====================================================================
@@ -47,7 +48,7 @@ start_link( WrkMod, WrkArgs ) when is_atom( WrkMod ) ->
 %%====================================================================
 
 %% @private
-init( {WrkMod, WrkArgs} ) when is_atom( WrkMod ) ->
+init( {M, F, A} ) when is_atom( M ), is_function( F ), is_list( A ) ->
 
     SupFlags = #{
                   strategy  => simple_one_for_one,
@@ -57,11 +58,11 @@ init( {WrkMod, WrkArgs} ) when is_atom( WrkMod ) ->
 
     ChildSpec = #{
                    id       => undefined,
-                   start    => {WrkMod, start_link, [WrkArgs]},
+                   start    => {M, F, A},
                    restart  => temporary,
                    shutdown => 5000,
                    type     => worker,
-                   modules  => [WrkMod]
+                   modules  => [M]
                  },
 
     {ok, {SupFlags, [ChildSpec]}}.
