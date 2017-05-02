@@ -68,8 +68,8 @@ We show how to configure the application, how to create a module implementing th
   {modules, [example, add_wrk, square_wrk]},
   {env,[
         {pool_lst, [
-                    #{ id => add,    size => 8, mod => add_wrk,    args => [] },
-                    #{ id => square, size => 4, mod => square_wrk, args => [] }
+                    #{ id => add,    size => 8, mod => add_wrk },
+                    #{ id => square, size => 4, mod => square_wrk }
                    ]}
        ]}
  ]}.
