@@ -5,7 +5,7 @@
 
 This library allows the management of a fixed-size worker pool from which generic worker instances can be allocated, used, and released. gruff automatically restarts any failing worker and a worker is automatically released if the allocating client fails.
 
-The interface and behavior of the gruff library are intentionally close to the [poolboy](https://github.com/devinus/poolboy) worker pool factory and bears resemblance to other Erlang worker pool managers like [pooler](https://github.com/seth/pooler) or [worker_pool](https://github.com/inaka/worker_pool). This allows the comparison of performance, features, and implementation details. Herein, gruff is the attempt to max out simplicity and clarity in the implementation to demonstrate the expressive power of the [gen_pnet](https://github.com/joergen7/gen_pnet) behavior.
+The interface and behavior of the gruff library are intentionally close to the [poolboy](https://github.com/devinus/poolboy) worker pool factory and resemble other Erlang worker pool managers like [pooler](https://github.com/seth/pooler) or [worker_pool](https://github.com/inaka/worker_pool). This allows the comparison of performance, features, and implementation details. Herein, gruff is the attempt to max out simplicity and clarity in the implementation to demonstrate the expressive power of the [gen_pnet](https://github.com/joergen7/gen_pnet) behavior.
 
 ![gruff Petri net model](priv/gruff_pnet.png)
 
@@ -192,6 +192,7 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 ### poolboy
 
 - poolboy allows both blocking and non-blocking checkout (only blocking checkout is supported in gruff).
+- In poolboy workers have to implement a worker behavior (`poolboy_worker`) which exposes a `start_link/1` function used to start workers. In contrast, gruff (and also pooler) starts workers via an `{M, F, A}` triple.
 - poolboy uses a fifo/lifo worker allocation strategy while gruff uses a non-deterministic allocation strategy instead.
 - Only a part of the worker instances are started right away. Overflow workers are started if this initial worker contingent does not suffice to handle all requests. In contrast, the number of workers in gruff is fixed (no overflow).
 - In contrast to gruff, poolboy prefers exception handling over `{ok, Result} | {error, Reason}` return values.
@@ -199,7 +200,6 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 ### pooler
 
 - pooler allows both blocking and non-blocking checkout.
-- In gruff (as in poolboy) workers have to implement a worker behavior (`gruff_wrk`) which exposes a `start_link/1` function used to start workers. In pooler, workers are started via an `{M, F, A}` triple.
 - Worker allocation strategies and strategies for pool growth can be controlled by the user.
 - pooler integrates [exometer](https://github.com/Feuerlabs/exometer) for instrumentation.
 - A pooler instance manages several worker pools, while each gruff instance represents only a single pool of homogeneous workers.
