@@ -111,17 +111,17 @@ init( [] ) ->
 
     {ok, PoolLst} = application:get_env( example, pool_lst ),
 
-    ChildSpecs = [#{ id       => Id,
-                     start    => {gruff, start_link, [{local, Id}, WrkMod,
-                                                      WrkArgs, Size]},
+    ChildSpecs = [#{ id      => Id,
+                     start    => {gruff, start_link, [{local, Id},
+                                                      {WrkMod, start_link, []},
+                                                      Size]},
                      restart  => permanent,
                      shutdown => 5000,
                      type     => worker,
                      modules  => [gruff]
                    } || #{ id   := Id,
                            size := Size,
-                           mod  := WrkMod,
-                           args := WrkArgs
+                           mod  := WrkMod
                          } <- PoolLst],
 
     SupFlags = #{ strategy  => one_for_one,
@@ -135,14 +135,14 @@ init( [] ) ->
 
 ```erlang
 -module( add_wrk ).
--behaviour( gruff_wrk ).
 -behaviour( gen_server ).
 
--export( [start_link/1] ).
+-export( [start_link/0] ).
+
 -export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2, init/1,
           terminate/2] ).
 
-start_link( WrkArgs ) -> gen_server:start_link( ?MODULE, WrkArgs, [] ).
+start_link() -> gen_server:start_link( ?MODULE, [], [] ).
 
 code_change( _OldVsn, State, _Extra )    -> {ok, State}.
 handle_call( {add, A, B}, _From, State ) -> {reply, A+B, State}.
@@ -156,14 +156,14 @@ terminate( _Reason, _State )             -> ok.
 
 ```erlang
 -module( square_wrk ).
--behaviour( gruff_wrk ).
 -behaviour( gen_server ).
 
--export( [start_link/1] ).
+-export( [start_link/0] ).
+
 -export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2, init/1,
           terminate/2] ).
 
-start_link( WrkArgs ) -> gen_server:start_link( ?MODULE, WrkArgs, [] ).
+start_link() -> gen_server:start_link( ?MODULE, [], [] ).
 
 code_change( _OldVsn, State, _Extra )    -> {ok, State}.
 handle_call( {square, X}, _From, State ) -> {reply, X*X, State}.
