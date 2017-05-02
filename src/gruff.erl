@@ -90,12 +90,12 @@
 %% @see start_link/4
 -spec start_link( {M, F, A}, N ) -> result()
 when M :: atom(),
-     F :: fun(),
+     F :: atom(),
      A :: [_],
      N :: pos_integer().
 
 start_link( {M, F, A}, N )
-when is_atom( M ), is_function( F ), is_list( A ),
+when is_atom( M ), is_atom( F ), is_list( A ),
      is_integer( N ), N > 0 ->
   gen_pnet:start_link( ?MODULE, {{M, F, A}, N}, [] ).
 
@@ -108,13 +108,13 @@ when is_atom( M ), is_function( F ), is_list( A ),
 -spec start_link( ServerName, {M, F, A}, N ) -> result()
 when ServerName :: server_name(),
      M          :: atom(),
-     F          :: fun(),
+     F          :: atom(),
      A          :: [_],
      N          :: pos_integer().
 
 start_link( ServerName, {M, F, A}, N )
 when is_tuple( ServerName ),
-     is_atom( M ), is_function( F ), is_list( A ),
+     is_atom( M ), is_atom( F ), is_list( A ),
      is_integer( N ), N > 0 ->
   gen_pnet:start_link( ServerName, ?MODULE, {{M, F, A}, N}, [] ).
 
