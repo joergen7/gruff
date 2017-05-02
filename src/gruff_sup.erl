@@ -53,7 +53,7 @@ start_link( {M, F, A} ) when is_atom( M ), is_atom( F ), is_list( A ) ->
 %%====================================================================
 
 %% @private
-init( {M, F, A} ) when is_atom( M ), is_function( F ), is_list( A ) ->
+init( {M, F, A} ) when is_atom( M ), is_atom( F ), is_list( A ) ->
 
     SupFlags = #{
                   strategy  => simple_one_for_one,
