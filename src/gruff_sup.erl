@@ -39,7 +39,12 @@
 %%      triple specifies how the worker processes are started. Herein, `M'
 %%      denotes the worker's module name, `F' is the start function, and `A' is
 %%      the argument list handed to the worker process on startup.
-start_link( {M, F, A} ) when is_atom( M ), is_function( F ), is_list( A ) ->
+-spec start_link( {M, F, A} ) -> {ok, pid()} | ignore | {error, _}
+when M :: atom(),
+     F :: atom(),
+     A :: [_].
+
+start_link( {M, F, A} ) when is_atom( M ), is_atom( F ), is_list( A ) ->
     supervisor:start_link( ?MODULE, {M, F, A} ).
 
 
