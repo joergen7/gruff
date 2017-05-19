@@ -1,5 +1,5 @@
-@author Jorgen Brandt <joergen.brandt@onlinehome.de>
-@copyright 2016 Jorgen Brandt
+@author Jörgen Brandt <joergen.brandt@onlinehome.de>
+@copyright 2017 Jörgen Brandt
 @version 0.1.0
 @title A basic worker pool manager for Erlang to showcase gen_pnet.
 @doc

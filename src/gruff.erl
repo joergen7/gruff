@@ -35,7 +35,7 @@
 -export( [code_change/3, handle_call/3, handle_cast/2, handle_info/2, init/1,
           terminate/2, trigger/3] ).
 
--export( [place_lst/0, trsn_lst/0, init_marking/2, preset/1, is_enabled/2,
+-export( [place_lst/0, trsn_lst/0, init_marking/2, preset/1, is_enabled/3,
           fire/3] ).
 
 -export( [start_link/2, start_link/3, checkout/1, checkout/2, checkin/2,
@@ -289,17 +289,17 @@ preset( start )          -> ['Unstarted'].
 
 
 %% @private
-is_enabled( down_busy,      #{ 'Down'    := [M], 'Busy'    := [{_, M, _}] } ) -> true;
-is_enabled( down_waiting,   #{ 'Down'    := [M], 'Waiting' := [{_, _, M}] } ) -> true;
-is_enabled( monitor,        _ )                                               -> true;
-is_enabled( cancel_waiting, #{ 'Cancel'  := [R], 'Waiting' := [{_, R, _}] } ) -> true;
-is_enabled( cancel_busy,    #{ 'Cancel'  := [R], 'Busy'    := [{R, _, _}] } ) -> true;
-is_enabled( free,           #{ 'Checkin' := [P], 'Busy'    := [{_, _, P}] } ) -> true;
-is_enabled( alloc,          _ )                                               -> true;
-is_enabled( exit_busy,      #{ 'Exit'    := [P], 'Busy'    := [{_, _, P}] } ) -> true;
-is_enabled( exit_idle,      #{ 'Exit'    := [P], 'Idle'    := [P] } )         -> true;
-is_enabled( start,          _ )                                               -> true;
-is_enabled( _,              _ )                                               -> false.
+is_enabled( down_busy,      #{ 'Down'    := [M], 'Busy'    := [{_, M, _}] }, _ ) -> true;
+is_enabled( down_waiting,   #{ 'Down'    := [M], 'Waiting' := [{_, _, M}] }, _ ) -> true;
+is_enabled( monitor,        _,                                               _ ) -> true;
+is_enabled( cancel_waiting, #{ 'Cancel'  := [R], 'Waiting' := [{_, R, _}] }, _ ) -> true;
+is_enabled( cancel_busy,    #{ 'Cancel'  := [R], 'Busy'    := [{R, _, _}] }, _ ) -> true;
+is_enabled( free,           #{ 'Checkin' := [P], 'Busy'    := [{_, _, P}] }, _ ) -> true;
+is_enabled( alloc,          _,                                               _ ) -> true;
+is_enabled( exit_busy,      #{ 'Exit'    := [P], 'Busy'    := [{_, _, P}] }, _ ) -> true;
+is_enabled( exit_idle,      #{ 'Exit'    := [P], 'Idle'    := [P] },         _ ) -> true;
+is_enabled( start,          _,                                               _ ) -> true;
+is_enabled( _,              _,                                               _ ) -> false.
 
 
 %% @private
