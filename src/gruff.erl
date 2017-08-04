@@ -39,7 +39,7 @@
           fire/3] ).
 
 -export( [start_link/2, start_link/3, checkout/1, checkout/2, checkin/2,
-          transaction/2, transaction/3] ).
+          transaction/2, transaction/3, stop/1] ).
 
 
 %%====================================================================
@@ -196,6 +196,13 @@ when is_function( Fun, 1 ), is_integer( Timeout ), Timeout >= 0 ->
         ok = checkin( Name, WrkPid )
       end
   end.
+
+%% @doc Stops the gruff instance under the given name.
+-spec stop( Name ) -> ok
+when Name :: name().
+
+stop( Name ) ->
+  gen_pnet:stop( Name ).
 
 
 %%====================================================================
