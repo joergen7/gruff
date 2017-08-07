@@ -318,7 +318,7 @@ fire( start, #{ 'Unstarted' := [t] }, #gruff_state{ sup_pid=SupPid } ) ->
 fire( exit_idle, #{ 'Exit' := [P], 'Idle' := [P] }, _ ) ->
   {produce, #{ 'Unstarted' => [t] }};
 
-fire( exit_busy, #{ 'Exit' := [P], 'Busy' := [_, M, P] }, _ ) ->
+fire( exit_busy, #{ 'Exit' := [P], 'Busy' := [{_, M, P}] }, _ ) ->
   true = demonitor( M ),
   {produce, #{ 'Unstarted' => [t] }};
 
