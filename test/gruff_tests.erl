@@ -31,7 +31,10 @@ gruff_test_() ->
      fun checked_out_dead_worker_restarts/0},
 
     {<<"idle dead worker restarts">>,
-     fun idle_dead_worker_restarts/0}
+     fun idle_dead_worker_restarts/0},
+
+    {<<"dead process owner frees worker">>,
+     fun dead_process_owner_frees_worker/0}
    ]
 
   }.
@@ -281,7 +284,6 @@ idle_dead_worker_restarts() ->
   #{ 'Unstarted' := Unstarted3,
      'Idle'      := Idle3,
      'Busy'      := Busy3,
-     'Checkout'  := Checkout3,
      'Waiting'   := Waiting3 } = gen_pnet:marking( Pid ),
   check_invariant( 7, Unstarted3, Idle3, Busy3 ),
   ?assertEqual( 7, length( Busy3 ) ),
@@ -328,6 +330,38 @@ idle_dead_worker_restarts() ->
 
   % stop gruff instance
   ok = gruff:stop( Pid ).
+
+
+
+
+dead_process_owner_frees_worker() ->
+
+  % start new gruff instance
+  {ok, Pid} = new_gruff( 10 ),
+
+  % start a process that checks out a worker and dies without giving it back
+  spawn( fun() ->
+    {ok, _} = gruff:checkout( Pid ),
+    exit( normal )
+  end ),
+
+  % wait half a second
+  timer:sleep( 500 ),
+  
+  % after some time, the gruff instance should just sit there with ten idle
+  % workers
+  #{ 'Unstarted' := Unstarted1,
+     'Idle'      := Idle1,
+     'Busy'      := Busy1,
+     'Down'      := Down1 } = gen_pnet:marking( Pid ),
+  check_invariant( 10, Unstarted1, Idle1, Busy1 ),
+  ?assertEqual( 10, length( Idle1 ) ),
+  ?assertEqual( 0, length( Down1 ) ),
+
+  % stop gruff instance
+  ok = gruff:stop( Pid ).
+
+
 
 
 
