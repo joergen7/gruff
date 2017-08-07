@@ -21,9 +21,17 @@ gruff_test_() ->
    end,
 
    [
-    {<<"Golden path">>, fun golden_path/0},
-    {<<"Checkout all and checkin all">>, fun checkout_all_checkin_all/0},
-    {<<"Dead worker is restarted">>, fun dead_worker_is_restarted/0}
+    {<<"golden path">>,
+     fun golden_path/0},
+
+    {<<"checkout all and checkin all">>,
+     fun checkout_all_checkin_all/0},
+
+    {<<"checked out dead worker restarts">>,
+     fun checked_out_dead_worker_restarts/0},
+
+    {<<"idle dead worker restarts">>,
+     fun idle_dead_worker_restarts/0}
    ]
 
   }.
@@ -158,7 +166,7 @@ checkout_all_checkin_all() ->
 
 
 
-dead_worker_is_restarted() ->
+checked_out_dead_worker_restarts() ->
 
   % start new gruff instance
   {ok, Pid} = new_gruff( 7 ),
@@ -167,7 +175,82 @@ dead_worker_is_restarted() ->
   {ok, Worker} = gruff:checkout( Pid ),
 
   % kill worker
-  kill_worker( Worker ).
+  kill_worker( Worker ),
+
+  % the killed worker should be restarted
+  #{ 'Unstarted' := Unstarted1,
+     'Idle'      := Idle1,
+     'Busy'      := Busy1,
+     'Exit'      := Exit1 } = gen_pnet:marking( Pid ),
+  check_invariant( 7, Unstarted1, Idle1, Busy1 ),
+  ?assertEqual( 7, length( Idle1 )+length( Unstarted1 )+length( Exit1 ) ),
+  ?assertEqual( 0, length( Busy1 )-length( Exit1 ) ),
+
+  % checkout all seven workers
+  Workers = [W || {ok, W} <- [gruff:checkout( Pid ) || _ <- lists:seq( 1, 7 )]],
+  [A, B, C|_] = Workers,
+
+  % seven workers should be in busy state
+  #{ 'Unstarted' := Unstarted2,
+     'Idle'      := Idle2,
+     'Busy'      := Busy2 } = gen_pnet:marking( Pid ),
+  check_invariant( 7, Unstarted2, Idle2, Busy2 ),
+  ?assertEqual( 7, length( Busy2 ) ),
+  ?assertEqual( 0, length( Unstarted2 )+length( Idle2 ) ),
+
+  % kill first worker
+  kill_worker( A ),
+
+  % the killed worker should be restarted
+  #{ 'Unstarted' := Unstarted3,
+     'Idle'      := Idle3,
+     'Busy'      := Busy3,
+     'Exit'      := Exit3 } = gen_pnet:marking( Pid ),
+  check_invariant( 7, Unstarted3, Idle3, Busy3 ),
+  ?assertEqual( 1, length( Idle3 )+length( Unstarted3 )+length( Exit3 ) ),
+  ?assertEqual( 6, length( Busy3 )-length( Exit3 ) ),
+
+  % kill the other two workers
+  kill_worker( B ),
+  kill_worker( C ),
+
+  % the killed worker should be restarted
+  #{ 'Unstarted' := Unstarted4,
+     'Idle'      := Idle4,
+     'Busy'      := Busy4,
+     'Exit'      := Exit4 } = gen_pnet:marking( Pid ),
+  check_invariant( 7, Unstarted4, Idle4, Busy4 ),
+  ?assertEqual( 3, length( Idle4 )+length( Unstarted4 )+length( Exit4 ) ),
+  ?assertEqual( 4, length( Busy4 )-length( Exit4 ) ),
+  
+  % stop gruff instance
+  ok = gruff:stop( Pid ).
+
+
+
+
+idle_dead_worker_restarts() ->
+
+  % start new gruff instance
+  {ok, Pid} = new_gruff( 7 ),
+
+  % checkout single worker
+  {ok, Worker} = gruff:checkout( Pid ),
+
+  % kill the checked out worker
+  kill_worker( Worker ),
+
+  % the killed worker should be restarted
+  #{ 'Unstarted' := Unstarted1,
+     'Idle'      := Idle1,
+     'Busy'      := Busy1,
+     'Exit'      := Exit1 } = gen_pnet:marking( Pid ),
+  check_invariant( 7, Unstarted1, Idle1, Busy1 ),
+  ?assertEqual( 7, length( Idle1 )+length( Unstarted1 )+length( Exit1 ) ),
+  ?assertEqual( 0, length( Busy1 )-length( Exit1 ) ).
+
+
+
 
 %%====================================================================
 %% Helper functions
