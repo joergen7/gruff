@@ -30,8 +30,8 @@ gruff_test_() ->
     {<<"checked out dead worker restarts">>,
      fun checked_out_dead_worker_restarts/0},
 
-    {<<"checkout from all busy makes client wait">>,
-     fun checkout_from_all_busy_makes_client_wait/0},
+    {<<"checkout from all busy blocks client">>,
+     fun checkout_from_all_busy_blocks_client/0},
 
     {<<"dead process owner frees worker">>,
      fun dead_process_owner_frees_worker/0}
@@ -235,7 +235,7 @@ checked_out_dead_worker_restarts() ->
 
 
 
-checkout_from_all_busy_makes_client_wait() ->
+checkout_from_all_busy_blocks_client() ->
 
   % start new gruff instance
   {ok, Pid} = new_gruff( 7 ),
