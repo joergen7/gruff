@@ -230,7 +230,7 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 
 ## Authors
 
-- Jörgen Brandt (joergen7) [joergen.brandt@onlinehome.de](mailto:joergen.brandt@onlinehome.de)
+- Jörgen Brandt ([@joergen7](https://github.com/joergen7/)) [joergen.brandt@onlinehome.de](mailto:joergen.brandt@onlinehome.de)
 
 ## License
 
