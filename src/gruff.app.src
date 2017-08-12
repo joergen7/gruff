@@ -7,11 +7,11 @@
     stdlib
    ]},
   {env,[]},
-  {modules, [gruff, gruff_sup, gruff_wrk]},
+  {modules, [gruff, gruff_sup]},
 
   {maintainers, ["Jorgen Brandt"]},
   {licenses, ["Apache 2.0"]},
   {links, [
-           {"GitHub", "https://github.com/joergen7/gruff"}
+           {"GitHub", "https://github.com/joergen7/gruff/"}
           ]}
  ]}.
