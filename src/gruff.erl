@@ -38,8 +38,8 @@
 -export( [place_lst/0, trsn_lst/0, init_marking/2, preset/1, is_enabled/3,
           fire/3] ).
 
--export( [start_link/2, start_link/3, checkout/1, checkout/2, checkin/2,
-          transaction/2, transaction/3, stop/1] ).
+-export( [start_link/2, start_link/3, checkout/1, checkout/2, checkin/1,
+          transaction/2, transaction/3, stop/1, get_pid/1] ).
 
 
 %%====================================================================
@@ -86,6 +86,12 @@
 %% API functions
 %%====================================================================
 
+%% @doc Returns the Pid of a worker object.
+-spec get_pid( {?MODULE, name(), reference(), pid()} ) -> pid().
+
+get_pid( {?MODULE, _Name, _R, WrkPid} ) ->
+  WrkPid.
+
 %% @doc Starts an instance of a gruff worker pool.
 %% @see start_link/4
 -spec start_link( {M, F, A}, N ) -> result()
@@ -122,8 +128,10 @@ when is_tuple( ServerName ),
 %% @doc Checks out a worker instance from the worker pool. Times out after five
 %%      seconds.
 %% @see checkout/2
--spec checkout( Name ) -> {ok, pid()} | {error, _}
-when Name :: name().
+-spec checkout( Name ) -> Result
+when Name   :: name(),
+     Result :: {ok, {?MODULE, pid(), reference(), pid()}}
+             | {error, _}.
 
 checkout( Name ) -> checkout( Name, ?TIMEOUT ).
 
@@ -134,14 +142,17 @@ checkout( Name ) -> checkout( Name, ?TIMEOUT ).
 %%      `{error, Reason}' where `Pid' is the process id of the successfully
 %%      allocated worker instance. The function times out after `Timeout'
 %%      milliseconds.
--spec checkout( Name, Timeout ) -> {ok, pid()} | {error, _}
+-spec checkout( Name, Timeout ) -> Result
 when Name    :: name(),
-     Timeout :: non_neg_integer().
+     Timeout :: non_neg_integer(),
+     Result  :: {ok, {?MODULE, name(), reference(), pid()}}
+              | {error, _}.
 
 checkout( Name, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
   R = make_ref(),
   try
-    gen_pnet:call( Name, {checkout, R}, Timeout )
+    {ok, WrkPid} = gen_pnet:call( Name, {checkout, R}, Timeout ),
+    {ok, {?MODULE, Name, R, WrkPid}}
   catch
     _:Reason ->
       ok = gen_pnet:cast( Name, {cancel, R} ),
@@ -152,12 +163,13 @@ checkout( Name, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
 %%      identifies the gruff instance and the `WrkPid' argument is the process
 %%      id of a worker instance, that has previously been allocated using
 %%      `checkout/n'.
--spec checkin( Name, WrkPid ) -> ok
+-spec checkin( {?MODULE, Name, R, WrkPid} ) -> ok
 when Name   :: name(),
+     R      :: reference(),
      WrkPid :: pid().
 
-checkin( Name, WrkPid ) when is_pid( WrkPid ) ->
-  ok = gen_pnet:cast( Name, {checkin, WrkPid} ).
+checkin( {?MODULE, Name, R, _WrkPid} ) when is_reference( R ) ->
+  ok = gen_pnet:cast( Name, {checkin, R} ).
 
 %% @doc Checks out a worker, applies a given function to it, and checks it in
 %%      again. Times out after five seconds.
@@ -187,13 +199,13 @@ transaction( Name, Fun, Timeout )
 when is_function( Fun, 1 ), is_integer( Timeout ), Timeout >= 0 ->
   case checkout( Name, Timeout ) of
     {error, Reason} -> {error, Reason};
-    {ok, WrkPid}    ->
+    {ok, Wrk}       ->
       try
-        {ok, Fun( WrkPid )}
+        {ok, Fun( Wrk:get_pid() )}
       catch
         _:Reason -> {error, Reason}
       after
-        ok = checkin( Name, WrkPid )
+        ok = Wrk:checkin()
       end
   end.
 
@@ -226,8 +238,8 @@ handle_call( _Request, _From, _NetState ) ->
 handle_cast( {cancel, R}, _NetState ) when is_reference( R ) ->
   {noreply, #{}, #{ 'Cancel' => [R]}};
 
-handle_cast( {checkin, P}, _NetState ) when is_pid( P ) ->
-  {noreply, #{}, #{ 'Checkin' => [P] }};
+handle_cast( {checkin, R}, _NetState ) when is_reference( R ) ->
+  {noreply, #{}, #{ 'Checkin' => [R] }};
 
 handle_cast( _Request, _NetState ) -> noreply.
 
@@ -301,7 +313,7 @@ is_enabled( down_waiting,   #{ 'Down'    := [M], 'Waiting' := [{_, _, M}] }, _ )
 is_enabled( monitor,        _,                                               _ ) -> true;
 is_enabled( cancel_waiting, #{ 'Cancel'  := [R], 'Waiting' := [{_, R, _}] }, _ ) -> true;
 is_enabled( cancel_busy,    #{ 'Cancel'  := [R], 'Busy'    := [{R, _, _}] }, _ ) -> true;
-is_enabled( free,           #{ 'Checkin' := [P], 'Busy'    := [{_, _, P}] }, _ ) -> true;
+is_enabled( free,           #{ 'Checkin' := [R], 'Busy'    := [{R, _, _}] }, _ ) -> true;
 is_enabled( alloc,          _,                                               _ ) -> true;
 is_enabled( exit_busy,      #{ 'Exit'    := [P], 'Busy'    := [{_, _, P}] }, _ ) -> true;
 is_enabled( exit_idle,      #{ 'Exit'    := [P], 'Idle'    := [P] },         _ ) -> true;
@@ -344,6 +356,6 @@ fire( cancel_busy, #{ 'Cancel' := [R], 'Busy' := [{R, M, P}] }, _ ) ->
   true = demonitor( M ),
   {produce, #{ 'Idle' => [P] }};
 
-fire( free, #{ 'Checkin' := [P], 'Busy' := [{_, M, P}] }, _ ) ->
+fire( free, #{ 'Checkin' := [R], 'Busy' := [{R, M, P}] }, _ ) ->
   true = demonitor( M ),
   {produce, #{ 'Idle' => [P] }}.

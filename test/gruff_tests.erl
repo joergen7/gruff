@@ -82,7 +82,7 @@ golden_path() ->
   ?assertEqual( 2, length( Busy3 ) ),
 
   % checkin second worker
-  ok = gruff:checkin( Pid, Worker ),
+  ok = Worker:checkin(),
 
   % one worker is busy while the others are idle or unstarted
   #{ 'Unstarted' := Unstarted4,
@@ -117,8 +117,8 @@ checkout_all_checkin_all() ->
   [A, B, C, D, E, F, G] = Workers,
 
   % checkin the first two workers
-  gruff:checkin( Pid, A ),
-  gruff:checkin( Pid, B ),
+  A:checkin(),
+  B:checkin(),
 
   % two workers should be checked in
   #{ 'Idle'      := Idle2,
@@ -130,8 +130,8 @@ checkout_all_checkin_all() ->
   ?assertEqual( 5, length( Busy2 )-length( Checkin2 ) ),
 
   % checkin the next two workers
-  gruff:checkin( Pid, C ),
-  gruff:checkin( Pid, D ),
+  C:checkin(),
+  D:checkin(),
 
   % four workers should be checked in
   #{ 'Idle'      := Idle3,
@@ -143,8 +143,8 @@ checkout_all_checkin_all() ->
   ?assertEqual( 3, length( Busy3 )-length( Checkin3 ) ),
 
   % checkin all but one worker
-  gruff:checkin( Pid, E ),
-  gruff:checkin( Pid, F ),
+  E:checkin(),
+  F:checkin(),
 
   % six workers should be checked in
   #{ 'Idle'      := Idle4,
@@ -156,7 +156,7 @@ checkout_all_checkin_all() ->
   ?assertEqual( 1, length( Busy4 )-length( Checkin4 ) ),
 
   % checkin last worker
-  gruff:checkin( Pid, G ),
+  G:checkin(),
 
   % all seven workers should be checked in
   #{ 'Idle'      := Idle5,
@@ -382,7 +382,8 @@ check_invariant( N, Unstarted, Idle, Busy ) ->
   ?assertEqual( N, length( Unstarted )+length( Idle )+length( Busy ) ).
 
 
-kill_worker( Pid ) when is_pid( Pid ) ->
+kill_worker( Wrk ) when is_tuple( Wrk ) ->
+  Pid = Wrk:get_pid(),
   erlang:monitor( process, Pid ),
   gen_server:stop( Pid ),
   receive
