@@ -39,10 +39,11 @@ gruff_test_() ->
     {<<"workers are reused">>,
      fun workers_are_reused/0},
 
-
-
     {<<"dead process owner frees worker">>,
-     fun dead_process_owner_frees_worker/0}
+     fun dead_process_owner_frees_worker/0},
+
+    {<<"exception in transaction is handled">>,
+     fun exception_in_transaction_is_handled/0}
 
     % {<<"idle dead worker restarts">>,
     % fun idle_dead_worker_restarts/0},
@@ -120,7 +121,7 @@ checkout_seven_of_ten_and_check_back_in() ->
      'Unstarted' := Unstarted1 } = gen_pnet:marking( Pid ),
   check_invariant( 10, Unstarted1, Idle1, Busy1 ),
   ?assertEqual( 7, length( Busy1 ) ),
-  ?assertEqual( 3, length( Idle1 ) ),
+  ?assertEqual( 3, length( Idle1 )+length( Unstarted1 ) ),
 
   [A, B, C, D, E, F, G] = Workers,
 
@@ -134,7 +135,7 @@ checkout_seven_of_ten_and_check_back_in() ->
      'Checkin'   := Checkin2,
      'Unstarted' := Unstarted2 } = gen_pnet:marking( Pid ),
   check_invariant( 10, Unstarted2, Idle2, Busy2 ),
-  ?assertEqual( 5, length( Idle2 )+length( Checkin2 ) ),
+  ?assertEqual( 5, length( Idle2 )+length( Unstarted2 )+length( Checkin2 ) ),
   ?assertEqual( 5, length( Busy2 )-length( Checkin2 ) ),
 
   % checkin the next two workers
@@ -147,7 +148,7 @@ checkout_seven_of_ten_and_check_back_in() ->
      'Checkin'   := Checkin3,
      'Unstarted' := Unstarted3 } = gen_pnet:marking( Pid ),
   check_invariant( 10, Unstarted3, Idle3, Busy3 ),
-  ?assertEqual( 7, length( Idle3 )+length( Checkin3 ) ),
+  ?assertEqual( 7, length( Idle3 )+length( Unstarted3 )+length( Checkin3 ) ),
   ?assertEqual( 3, length( Busy3 )-length( Checkin3 ) ),
 
   % checkin all but one worker
@@ -160,7 +161,7 @@ checkout_seven_of_ten_and_check_back_in() ->
      'Checkin'   := Checkin4,
      'Unstarted' := Unstarted4 } = gen_pnet:marking( Pid ),
   check_invariant( 10, Unstarted4, Idle4, Busy4 ),
-  ?assertEqual( 9, length( Idle4 )+length( Checkin4 ) ),
+  ?assertEqual( 9, length( Idle4 )+length( Unstarted4 )+length( Checkin4 ) ),
   ?assertEqual( 1, length( Busy4 )-length( Checkin4 ) ),
 
   % checkin last worker
@@ -172,7 +173,7 @@ checkout_seven_of_ten_and_check_back_in() ->
      'Checkin'   := Checkin5,
      'Unstarted' := Unstarted5 } = gen_pnet:marking( Pid ),
   check_invariant( 10, Unstarted5, Idle5, Busy5 ),
-  ?assertEqual( 10, length( Idle5 )+length( Checkin5 ) ),
+  ?assertEqual( 10, length( Idle5 )+length( Unstarted5 )+length( Checkin5 ) ),
   ?assertEqual( 0, length( Busy5 )-length( Checkin5 ) ),
 
   % stop gruff instance
@@ -501,18 +502,6 @@ workers_are_reused() ->
   ok = gruff:stop( Pid ).
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 dead_process_owner_frees_worker() ->
 
   % start new gruff instance
@@ -521,7 +510,7 @@ dead_process_owner_frees_worker() ->
   % start a process that checks out a worker and dies without giving it back
   spawn( fun() ->
     {ok, _} = gruff:checkout( Pid ),
-    exit( normal )
+    timer:sleep( 250 )
   end ),
 
   % wait half a second
@@ -535,7 +524,44 @@ dead_process_owner_frees_worker() ->
      'Down'      := Down1 } = gen_pnet:marking( Pid ),
   check_invariant( 10, Unstarted1, Idle1, Busy1 ),
   ?assertEqual( 10, length( Idle1 ) ),
+  ?assertEqual( 0, length( Busy1 ) ),
+  ?assertEqual( 0, length( Unstarted1 ) ),
   ?assertEqual( 0, length( Down1 ) ),
+
+  % stop gruff instance
+  ok = gruff:stop( Pid ).
+
+
+exception_in_transaction_is_handled() ->
+
+  % start new gruff instance
+  {ok, Pid} = new_gruff( 2 ),
+
+  Tx = fun( WorkerPid ) ->
+         ?assert( is_pid( WorkerPid ) ),
+         #{ 'Unstarted' := Unstarted1,
+            'Idle'      := Idle1,
+            'Busy'      := Busy1 } = gen_pnet:marking( Pid ),
+         check_invariant( 2, Unstarted1, Idle1, Busy1 ),
+         ?assertEqual( 1, length( Busy1 ) ),
+         ?assertEqual( 1, length( Idle1 )+length( Unstarted1 ) ),
+         throw( it_on_the_ground )
+       end,
+
+  Result = gruff:transaction( Pid, Tx ),
+  ?assertEqual( {error, it_on_the_ground}, Result ),
+
+  Marking = gen_pnet:marking( Pid ),
+  io:format( "~p~n", [Marking] ),
+
+  #{ 'Unstarted' := Unstarted2,
+     'Idle'      := Idle2,
+     'Busy'      := Busy2,
+     'Checkin'   := Checkin2 } = Marking,
+
+  check_invariant( 2, Unstarted2, Idle2, Busy2 ),
+  ?assertEqual( 2, length( Idle2 )+length( Unstarted2 )+length( Checkin2 ) ),
+  ?assertEqual( 0, length( Busy2 )-length( Checkin2 ) ),
 
   % stop gruff instance
   ok = gruff:stop( Pid ).
