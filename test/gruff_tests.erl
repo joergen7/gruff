@@ -36,6 +36,11 @@ gruff_test_() ->
     {<<"restarted dead worker is allocated to waiting client">>,
      fun restarted_dead_worker_is_allocated_to_waiting_client/0},
 
+    {<<"workers are reused">>,
+     fun workers_are_reused/0},
+
+
+
     {<<"dead process owner frees worker">>,
      fun dead_process_owner_frees_worker/0}
 
@@ -451,7 +456,49 @@ restarted_dead_worker_is_allocated_to_waiting_client() ->
   ok = gruff:stop( Pid ).
 
 
+workers_are_reused() ->
 
+  % start new gruff instance
+  {ok, Pid} = new_gruff( 5 ),
+
+  % checkout seven the workers
+  Workers = [W || {ok, W} <- [gruff:checkout( Pid ) || _ <- lists:seq( 1, 5 )]],
+
+  % all workers should be busy and none should be idle
+  #{ 'Idle'      := Idle1,
+     'Busy'      := Busy1,
+     'Unstarted' := Unstarted1 } = gen_pnet:marking( Pid ),
+  check_invariant( 5, Unstarted1, Idle1, Busy1 ),
+  ?assertEqual( 5, length( Busy1 ) ),
+  ?assertEqual( 0, length( Idle1 ) ),
+
+  [A1|_] = Workers,
+
+  % checkin the worker
+  A1:checkin(),
+
+  #{ 'Idle'      := Idle2,
+     'Busy'      := Busy2,
+     'Checkin'   := Checkin2,
+     'Unstarted' := Unstarted2 } = gen_pnet:marking( Pid ),
+  check_invariant( 5, Unstarted2, Idle2, Busy2 ),
+  ?assertEqual( 1, length( Idle2 )+length( Checkin2 ) ),
+  ?assertEqual( 4, length( Busy2 )-length( Checkin2 ) ),
+
+  % checkout the worker again
+  {ok, A2} = gruff:checkout( Pid ),
+
+  #{ 'Idle'      := Idle3,
+     'Busy'      := Busy3,
+     'Unstarted' := Unstarted3 } = gen_pnet:marking( Pid ),
+  check_invariant( 5, Unstarted3, Idle3, Busy3 ),
+  ?assertEqual( 0, length( Idle3 )+length( Unstarted3 ) ),
+  ?assertEqual( 5, length( Busy3 ) ),
+
+  ?assertEqual( A1:get_pid(), A2:get_pid() ),
+
+  % stop gruff instance
+  ok = gruff:stop( Pid ).
 
 
 
