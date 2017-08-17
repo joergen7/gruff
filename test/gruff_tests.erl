@@ -402,7 +402,7 @@ exception_in_transaction_is_handled() ->
   ?assertEqual( {error, it_on_the_ground}, Result ),
   timer:sleep( 250 ),
 
-  check_all_idle_or_unstarted( Pid, 2 )
+  check_all_idle_or_unstarted( Pid, 2 ),
 
   % stop gruff instance
   ok = gruff:stop( Pid ).
@@ -443,10 +443,6 @@ checkout_times_out_if_no_workers_available() ->
 
 new_gruff( N ) ->
   gruff:start_link( {local, ?GRUFF_NAME}, {add_wrk, start_link, []}, N ).
-
-
-check_invariant( N, Unstarted, Idle, Busy ) ->
-  ?assertEqual( N, length( Unstarted )+length( Idle )+length( Busy ) ).
 
 
 kill_worker( Wrk ) when is_tuple( Wrk ) ->
