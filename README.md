@@ -1,7 +1,7 @@
 # gruff
 ###### A basic worker pool manager for Erlang to showcase gen_pnet.
 
-[![hex.pm](https://img.shields.io/hexpm/v/gruff.svg?style=flat-square)](https://hex.pm/packages/gruff) [![Build Status](https://travis-ci.org/joergen7/gruff.svg?branch=master)](https://travis-ci.org/joergen7/gruff)
+[![hex.pm](https://img.shields.io/hexpm/v/gruff.svg?style=flat)](https://hex.pm/packages/gruff) [![Build Status](https://travis-ci.org/joergen7/gruff.svg?branch=master)](https://travis-ci.org/joergen7/gruff)
 
 This library allows the management of a fixed-size worker pool from which generic worker instances can be allocated, used, and released. gruff automatically restarts any failing worker and a worker is automatically released if the allocating client fails.
 
@@ -216,8 +216,8 @@ Worker pool managers are a staple of Erlang applications. Here, we compare gruff
 
 ## System Requirements
 
-- Erlang OTP 18.0 or higher
-- Rebar3 3.0.0 or higher
+- [Erlang](http://www.erlang.org/) OTP 18.0 or higher
+- [Rebar3](https://www.rebar3.org/) 3.0.0 or higher
 
 ## Resources
 
