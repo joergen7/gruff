@@ -4,14 +4,10 @@
   {registered, []},
   {applications,
    [kernel,
-    stdlib
-   ]},
-  {env,[]},
+    stdlib]},
+  {env, []},
   {modules, [gruff, gruff_sup]},
 
   {maintainers, ["Jorgen Brandt"]},
   {licenses, ["Apache 2.0"]},
-  {links, [
-           {"GitHub", "https://github.com/joergen7/gruff/"}
-          ]}
- ]}.
+  {links, [{"GitHub", "https://github.com/joergen7/gruff/"}]}]}.
