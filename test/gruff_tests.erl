@@ -80,7 +80,7 @@ golden_path() ->
   check_busy( Pid, 10, 2 ),
 
   % checkin second worker
-  ok = Worker:checkin(),
+  ok = gruff:checkin(Worker),
   timer:sleep( 250 ),
 
   % one worker is busy while the others are idle or unstarted
@@ -106,31 +106,31 @@ checkout_seven_of_ten_and_check_back_in() ->
   [A, B, C, D, E, F, G] = Workers,
 
   % checkin the first two workers
-  A:checkin(),
-  B:checkin(),
+  gruff:checkin(A),
+  gruff:checkin(B),
   timer:sleep( 250 ),
 
   % two workers should be checked in
   check_busy( Pid, 10, 5 ),
 
   % checkin the next two workers
-  C:checkin(),
-  D:checkin(),
+  gruff:checkin(C),
+  gruff:checkin(D),
   timer:sleep( 250 ),
 
   % four workers should be checked in
   check_busy( Pid, 10, 3 ),
 
   % checkin all but one worker
-  E:checkin(),
-  F:checkin(),
+  gruff:checkin(E),
+  gruff:checkin(F),
   timer:sleep( 250 ),
 
   % six workers should be checked in
   check_busy( Pid, 10, 1 ),
 
   % checkin last worker
-  G:checkin(),
+  gruff:checkin(G),
   timer:sleep( 250 ),
 
 
@@ -158,7 +158,7 @@ checkout_from_all_busy_blocks_client() ->
   Self = self(),
   spawn_link( fun() ->
     {ok, Wrk} = gruff:checkout( Pid ),
-    Wrk:checkin(),
+    gruff:checkin(Wrk),
     Self ! got_worker
   end ),
 
@@ -174,8 +174,8 @@ checkout_from_all_busy_blocks_client() ->
   check_all_busy_one_waiting( Pid, 7 ),
 
   % checkin first two workers
-  A:checkin(),
-  B:checkin(),
+  gruff:checkin(A),
+  gruff:checkin(B),
 
   % the process should get the new worker right away since it is still waiting
   % for a reply
@@ -190,23 +190,23 @@ checkout_from_all_busy_blocks_client() ->
   check_busy( Pid, 7, 5 ),
 
   % checkin next two workers
-  C:checkin(),
-  D:checkin(),
+  gruff:checkin(C),
+  gruff:checkin(D),
   timer:sleep( 250 ),
 
   % three workers should still be busy
   check_busy( Pid, 7, 3 ),
 
   % checkin another two workers
-  E:checkin(),
-  F:checkin(),
+  gruff:checkin(E),
+  gruff:checkin(F),
   timer:sleep( 250 ),
 
   % one worker should still be busy
   check_busy( Pid, 7, 1 ),
 
   % checkin last two workers
-  G:checkin(),
+  gruff:checkin(G),
   timer:sleep( 250 ),
 
   % one worker should still be busy
@@ -348,7 +348,7 @@ workers_are_reused() ->
   [A1|_] = Workers,
 
   % checkin the worker
-  A1:checkin(),
+  gruff:checkin(A1),
   timer:sleep( 250 ),
 
   check_busy( Pid, 5, 4 ),
@@ -358,7 +358,7 @@ workers_are_reused() ->
 
   check_all_busy( Pid, 5 ),
 
-  ?assertEqual( A1:get_pid(), A2:get_pid() ),
+  ?assertEqual( gruff:get_pid(A1), gruff:get_pid(A2) ),
 
   % stop gruff instance
   ok = gruff:stop( Pid ).
@@ -446,7 +446,7 @@ new_gruff( N ) ->
 
 
 kill_worker( Wrk ) when is_tuple( Wrk ) ->
-  Pid = Wrk:get_pid(),
+  Pid = gruff:get_pid(Wrk),
   erlang:monitor( process, Pid ),
   gen_server:stop( Pid ),
   receive

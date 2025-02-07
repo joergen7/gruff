@@ -17,7 +17,7 @@
 %% limitations under the License.
 %%
 %% -------------------------------------------------------------------
-%% @author Jörgen Brandt <joergen.brandt@onlinehome.de>
+%% @author Jörgen Brandt <joergen@cuneiform-lang.org>
 %% @version 0.1.0
 %% @copyright 2017 Jörgen Brandt
 %%
@@ -53,7 +53,8 @@
 %% Record definitions
 %%====================================================================
 
--record( gruff_state, {nwrk, sup_pid} ).
+-record(gruff_state, {nwrk :: pos_integer(), sup_pid :: pid()}).
+-record(worker, {name :: name(), ref :: reference(), pid :: pid()}).
 
 
 %%====================================================================
@@ -87,9 +88,9 @@
 %%====================================================================
 
 %% @doc Returns the Pid of a worker object.
--spec get_pid( {?MODULE, name(), reference(), pid()} ) -> pid().
+-spec get_pid( #worker{} ) -> pid().
 
-get_pid( {?MODULE, _Name, _R, WrkPid} ) ->
+get_pid( #worker{pid=WrkPid} ) ->
   WrkPid.
 
 %% @doc Starts an instance of a gruff worker pool.
@@ -130,7 +131,7 @@ when is_tuple( ServerName ),
 %% @see checkout/2
 -spec checkout( Name ) -> Result
 when Name   :: name(),
-     Result :: {ok, {?MODULE, pid(), reference(), pid()}}
+     Result :: {ok, #worker{}}
              | {error, _}.
 
 checkout( Name ) -> checkout( Name, ?TIMEOUT ).
@@ -145,14 +146,14 @@ checkout( Name ) -> checkout( Name, ?TIMEOUT ).
 -spec checkout( Name, Timeout ) -> Result
 when Name    :: name(),
      Timeout :: non_neg_integer(),
-     Result  :: {ok, {?MODULE, name(), reference(), pid()}}
+     Result  :: {ok, #worker{}}
               | {error, _}.
 
 checkout( Name, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
   R = make_ref(),
   try
     {ok, WrkPid} = gen_pnet:call( Name, {checkout, R}, Timeout ),
-    {ok, {?MODULE, Name, R, WrkPid}}
+    {ok, #worker{name=Name, ref=R, pid=WrkPid}}
   catch
     _:Reason ->
       ok = gen_pnet:cast( Name, {cancel, R} ),
@@ -163,12 +164,9 @@ checkout( Name, Timeout ) when is_integer( Timeout ), Timeout >= 0 ->
 %%      identifies the gruff instance and the `WrkPid' argument is the process
 %%      id of a worker instance, that has previously been allocated using
 %%      `checkout/n'.
--spec checkin( {?MODULE, Name, R, WrkPid} ) -> ok
-when Name   :: name(),
-     R      :: reference(),
-     WrkPid :: pid().
+-spec checkin( #worker{} ) -> ok.
 
-checkin( {?MODULE, Name, R, _WrkPid} ) when is_reference( R ) ->
+checkin( #worker{name=Name, ref=R} ) when is_reference( R ) ->
   ok = gen_pnet:cast( Name, {checkin, R} ).
 
 %% @doc Checks out a worker, applies a given function to it, and checks it in
@@ -201,11 +199,11 @@ when is_function( Fun, 1 ), is_integer( Timeout ), Timeout >= 0 ->
     {error, Reason} -> {error, Reason};
     {ok, Wrk}       ->
       try
-        {ok, Fun( Wrk:get_pid() )}
+        {ok, Fun( get_pid(Wrk) )}
       catch
         _:Reason -> {error, Reason}
       after
-        ok = Wrk:checkin()
+        ok = checkin(Wrk)
       end
   end.
 
@@ -228,7 +226,7 @@ code_change( _OldVsn, NetState, _Extra ) -> {ok, NetState}.
 %% @private
 handle_call( {checkout, R}, From, _NetState )
 when is_reference( R ), is_tuple( From ) ->
-  {noreply, #{}, #{ 'Checkout' => [{From, R}] }};
+  {noreply, #{ 'Checkout' => [{From, R}] }};
 
 handle_call( _Request, _From, _NetState ) ->
   {reply, {error, bad_msg}}.
@@ -236,20 +234,20 @@ handle_call( _Request, _From, _NetState ) ->
 
 %% @private
 handle_cast( {cancel, R}, _NetState ) when is_reference( R ) ->
-  {noreply, #{}, #{ 'Cancel' => [R]}};
+  {noreply, #{ 'Cancel' => [R]}};
 
 handle_cast( {checkin, R}, _NetState ) when is_reference( R ) ->
-  {noreply, #{}, #{ 'Checkin' => [R] }};
+  {noreply, #{ 'Checkin' => [R] }};
 
 handle_cast( _Request, _NetState ) -> noreply.
 
 
 %% @private
 handle_info( {'DOWN', MRef, _, _, _}, _NetState ) when is_reference( MRef ) ->
-  {noreply, #{}, #{ 'Down' => [MRef] }};
+  {noreply, #{ 'Down' => [MRef] }};
 
 handle_info( {'EXIT', Pid, _Reason}, _NetState ) when is_pid( Pid ) ->
-  {noreply, #{}, #{ 'Exit' => [Pid] }};
+  {noreply, #{ 'Exit' => [Pid] }};
 
 handle_info( _Request, _NetState ) -> noreply.
 
@@ -260,9 +258,7 @@ when is_atom( M ), is_atom( F ), is_list( A ),
      is_integer( N ), N > 0 ->
   false = process_flag( trap_exit, true ),
   {ok, SupPid} = gruff_sup:start_link( {M, F, A} ),
-  GruffState = #gruff_state{ nwrk=N, sup_pid=SupPid },
-  {ok, gen_pnet:new( ?MODULE, GruffState )}.
-
+  #gruff_state{ nwrk=N, sup_pid=SupPid }.
 
 %% @private
 terminate( _Reason, _NetState ) -> ok.
